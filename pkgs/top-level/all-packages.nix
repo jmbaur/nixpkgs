@@ -6949,6 +6949,8 @@ with pkgs;
 
   dhcping = callPackage ../tools/networking/dhcping { };
 
+  dhcpm = callPackage ../tools/networking/dhcpm { };
+
   dotacat = callPackage ../tools/misc/dotacat { };
 
   di = callPackage ../tools/system/di { };
