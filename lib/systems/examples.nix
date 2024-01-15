@@ -302,16 +302,20 @@ rec {
   # Windows
   #
 
-  # 32 bit mingw-w64
-  mingw32 = {
+  i386-mingw = {
     config = "i686-w64-mingw32";
     libc = "msvcrt"; # This distinguishes the mingw (non posix) toolchain
   };
 
-  # 64 bit mingw-w64
-  mingwW64 = {
+  x86_64-mingw = {
     # That's the triplet they use in the mingw-w64 docs.
     config = "x86_64-w64-mingw32";
+    libc = "msvcrt"; # This distinguishes the mingw (non posix) toolchain
+  };
+
+  aarch64-mingw = {
+    # That's the triplet they use in the mingw-w64 docs.
+    config = "aarch64-w64-mingw32";
     libc = "msvcrt"; # This distinguishes the mingw (non posix) toolchain
   };
 
