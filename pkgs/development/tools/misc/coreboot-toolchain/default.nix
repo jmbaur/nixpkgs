@@ -47,8 +47,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     allowedRequisites = [ ];
   };
 
-  nativeBuildInputs = [ bison curl git perl getopt ];
-  buildInputs = [ flex zlib (if withAda then gnat else gcc) ];
+  nativeBuildInputs = [ bison curl git perl getopt flex (if withAda then gnat else gcc) ];
+  depsTargetTarget = [ zlib ];
+  # buildInputs = [ zlib flex bison ];
 
   enableParallelBuilding = true;
   dontConfigure = true;
