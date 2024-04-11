@@ -68,6 +68,7 @@
 , p11-kit
 , libpwquality
 , qrencode
+, libarchive
 
   # the (optional) BPF feature requires bpftool, libbpf, clang and llvm-strip to
   # be available during build time.
@@ -192,9 +193,9 @@ stdenv.mkDerivation (finalAttrs: {
   # This has proven to be less error-prone than the previous systemd fork.
   src = fetchFromGitHub {
     owner = "systemd";
-    repo = "systemd-stable";
-    rev = "v${version}";
-    hash = "sha256-P1mKq+ythrv8MU7y2CuNtEx6qCDacugzfsPRZL+NPys=";
+    repo = "systemd";
+    rev = "fc4a9c9ce6eebbc472fc2947ae371f5925011545";
+    hash = "sha256-fzsUY3rCRUXpz6yyuOY/aNEipZ1uXYC0tN1p/Xl0j38=";
   };
 
   # On major changes, or when otherwise required, you *must* :
@@ -362,6 +363,14 @@ stdenv.mkDerivation (finalAttrs: {
           { name = "libp11-kit.so.0"; pkg = opt (withHomed || withCryptsetup) p11-kit; }
 
           { name = "libip4tc.so.2"; pkg = opt withIptables iptables; }
+
+          # TODO(jared): remove from buildInputs since these are dlopen'ed?
+          { name = "liblzma.so.5"; pkg = opt withCompression xz; }
+          { name = "liblz4.so.1"; pkg = opt withCompression lz4; }
+          { name = "libzstd.so.1"; pkg = opt withCompression zstd; }
+          { name = "libgcrypt.so.20"; pkg = opt wantGcrypt libgcrypt; }
+          { name = "libarchive.so.13"; pkg = opt (lib.trace "TODO(jared): make libarchive conditional" true) libarchive; }
+          { name = "libkmod.so.2"; pkg = opt withKmod kmod; }
         ];
 
       patchDlOpen = dl:
@@ -481,6 +490,7 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optional withUkify (python3Packages.python.withPackages (ps: with ps; [ pefile ]))
     ++ lib.optionals withPasswordQuality [ libpwquality ]
     ++ lib.optionals withQrencode [ qrencode ]
+    ++ lib.optionals (lib.trace "TODO: libarchive" true) [ libarchive ]
   ;
 
   mesonBuildType = "release";
@@ -502,8 +512,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonOption "tty-gid" "3") # tty in NixOS has gid 3
     (lib.mesonOption "debug-shell" "${bashInteractive}/bin/bash")
     (lib.mesonOption "pamconfdir" "${placeholder "out"}/etc/pam.d")
-    # Use cgroupsv2. This is already the upstream default, but better be explicit.
-    (lib.mesonOption "default-hierarchy" "unified")
     (lib.mesonOption "kmod-path" "${kmod}/bin/kmod")
 
     # D-Bus
