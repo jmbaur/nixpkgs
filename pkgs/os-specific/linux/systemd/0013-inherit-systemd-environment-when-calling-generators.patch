@@ -1,7 +1,7 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From 46b83afd6c5b955fba3454301a55a876b85985f0 Mon Sep 17 00:00:00 2001
 From: Yuriy Taraday <yorik.sar@gmail.com>
 Date: Fri, 17 Jun 2022 12:45:10 +0000
-Subject: [PATCH] inherit systemd environment when calling generators.
+Subject: [PATCH 13/18] inherit systemd environment when calling generators.
 
 Systemd generators need access to the environment configured in
 stage-2-init.sh since it schedules fsck and mkfs executions based on
@@ -16,10 +16,10 @@ executables that are being called from managers.
  1 file changed, 8 insertions(+)
 
 diff --git a/src/core/manager.c b/src/core/manager.c
-index 22cc5cc843..5dc7d4504f 100644
+index 21b6cca112..ff4fa5a7c1 100644
 --- a/src/core/manager.c
 +++ b/src/core/manager.c
-@@ -3914,9 +3914,17 @@ static int build_generator_environment(Manager *m, char ***ret) {
+@@ -3946,9 +3946,17 @@ static int build_generator_environment(Manager *m, char ***ret) {
           * adjust generated units to that. Let's pass down some bits of information that are easy for us to
           * determine (but a bit harder for generator scripts to determine), as environment variables. */
  
@@ -37,3 +37,6 @@ index 22cc5cc843..5dc7d4504f 100644
  
          r = strv_env_assign(&nl, "SYSTEMD_SCOPE", runtime_scope_to_string(m->runtime_scope));
          if (r < 0)
+-- 
+2.44.0
+

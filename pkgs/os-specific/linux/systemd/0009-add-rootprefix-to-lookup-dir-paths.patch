@@ -1,7 +1,7 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From d96f2b6af00ca450b034481d28f64ee58df407be Mon Sep 17 00:00:00 2001
 From: Andreas Rammhold <andreas@rammhold.de>
 Date: Thu, 9 May 2019 11:15:22 +0200
-Subject: [PATCH] add rootprefix to lookup dir paths
+Subject: [PATCH 09/18] add rootprefix to lookup dir paths
 
 systemd does not longer use the UDEVLIBEXEC directory as root for
 discovery default udev rules. By adding `$out/lib` to the lookup paths
@@ -12,10 +12,10 @@ files that I might have missed.
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/src/basic/constants.h b/src/basic/constants.h
-index 6bb5f3c281..678d13737d 100644
+index e70817c51f..650ed5fcdf 100644
 --- a/src/basic/constants.h
 +++ b/src/basic/constants.h
-@@ -65,13 +65,15 @@
+@@ -62,13 +62,15 @@
          "/etc/" n "\0"                          \
          "/run/" n "\0"                          \
          "/usr/local/lib/" n "\0"                \
@@ -23,13 +23,16 @@ index 6bb5f3c281..678d13737d 100644
 +        "/usr/lib/" n "\0"                      \
 +        PREFIX "/lib/" n "\0"
  
- #define CONF_PATHS_USR(n)                       \
+ #define CONF_PATHS(n)                           \
          "/etc/" n,                              \
          "/run/" n,                              \
          "/usr/local/lib/" n,                    \
 -        "/usr/lib/" n
-+        "/usr/lib/" n,                          \
++        "/usr/lib/" n                           \
 +        PREFIX "/lib/" n
  
- #define CONF_PATHS(n)                           \
-         CONF_PATHS_USR(n)
+ #define CONF_PATHS_STRV(n)                      \
+         STRV_MAKE(CONF_PATHS(n))
+-- 
+2.44.0
+

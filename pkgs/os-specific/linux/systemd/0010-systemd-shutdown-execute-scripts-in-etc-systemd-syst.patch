@@ -1,7 +1,7 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From fcc8b59e7e58377b84b59ed41e8618d6d8c39a36 Mon Sep 17 00:00:00 2001
 From: Nikolay Amiantov <ab@fmap.me>
 Date: Thu, 25 Jul 2019 20:45:55 +0300
-Subject: [PATCH] systemd-shutdown: execute scripts in
+Subject: [PATCH 10/18] systemd-shutdown: execute scripts in
  /etc/systemd/system-shutdown
 
 This is needed for NixOS to use such scripts as systemd directory is immutable.
@@ -10,7 +10,7 @@ This is needed for NixOS to use such scripts as systemd directory is immutable.
  1 file changed, 1 insertion(+)
 
 diff --git a/src/shutdown/shutdown.c b/src/shutdown/shutdown.c
-index b976b7d8cf..b1c02df6fd 100644
+index b709078afe..98429661ab 100644
 --- a/src/shutdown/shutdown.c
 +++ b/src/shutdown/shutdown.c
 @@ -336,6 +336,7 @@ static void init_watchdog(void) {
@@ -21,3 +21,6 @@ index b976b7d8cf..b1c02df6fd 100644
                  NULL
          };
          _cleanup_free_ char *cgroup = NULL;
+-- 
+2.44.0
+
