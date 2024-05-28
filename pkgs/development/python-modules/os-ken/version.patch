@@ -1,0 +1,65 @@
+diff --git a/doc/source/test-vrrp.rst b/doc/source/test-vrrp.rst
+index 46cac2d2..faac1bfc 100644
+--- a/doc/source/test-vrrp.rst
++++ b/doc/source/test-vrrp.rst
+@@ -144,7 +144,7 @@ Here's the helper executable, os_ken-vrrp::
+     log.early_init_log(logging.DEBUG)
+ 
+     from os_ken import flags
+-    from os_ken import version
++    from os_ken import __version__ as version
+     from os_ken.base import app_manager
+     from os_ken.controller import controller
+     from os_ken.lib import mac as lib_mac
+diff --git a/os_ken/cmd/osken_base.py b/os_ken/cmd/osken_base.py
+index 774d68c3..d4311a21 100644
+--- a/os_ken/cmd/osken_base.py
++++ b/os_ken/cmd/osken_base.py
+@@ -20,7 +20,7 @@ import sys
+ 
+ from os_ken import cfg
+ from os_ken import utils
+-from os_ken import version
++from os_ken import __version__ as version
+ 
+ 
+ subcommands = {
+diff --git a/os_ken/hooks.py b/os_ken/hooks.py
+index 234fd277..968e394f 100644
+--- a/os_ken/hooks.py
++++ b/os_ken/hooks.py
+@@ -18,7 +18,7 @@
+ import os
+ import sys
+ from setuptools.command import easy_install
+-from os_ken import version
++from os_ken import __version__ as version
+ 
+ 
+ # Global variables in this module doesn't work as we expect
+diff --git a/os_ken/services/protocols/bgp/operator/ssh.py b/os_ken/services/protocols/bgp/operator/ssh.py
+index 7efe5683..83c24bbb 100644
+--- a/os_ken/services/protocols/bgp/operator/ssh.py
++++ b/os_ken/services/protocols/bgp/operator/ssh.py
+@@ -25,7 +25,7 @@ import sys
+ 
+ import paramiko
+ 
+-from os_ken import version
++from os_ken import __version__ as version
+ from os_ken.lib import hub
+ from os_ken.services.protocols.bgp.base import Activity
+ from os_ken.services.protocols.bgp.operator.command import Command
+diff --git a/os_ken/tests/switch/run_mininet.py b/os_ken/tests/switch/run_mininet.py
+index 6038dde7..06dd26aa 100755
+--- a/os_ken/tests/switch/run_mininet.py
++++ b/os_ken/tests/switch/run_mininet.py
+@@ -9,7 +9,7 @@ from mininet.node import OVSSwitch
+ from mininet.node import UserSwitch
+ 
+ from oslo_config import cfg
+-from os_ken import version
++from os_ken import __version__ as version
+ from os_ken.ofproto.ofproto_common import OFP_TCP_PORT
+ 
+ 

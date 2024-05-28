@@ -1491,6 +1491,8 @@ self: super: with self; {
 
   behave = callPackage ../development/python-modules/behave { };
 
+  beka = callPackage ../development/python-modules/beka { };
+
   bellows = callPackage ../development/python-modules/bellows { };
 
   bencode-py = callPackage ../development/python-modules/bencode-py { };
@@ -2115,6 +2117,8 @@ self: super: with self; {
   chess = callPackage ../development/python-modules/chess { };
 
   chevron = callPackage ../development/python-modules/chevron { };
+
+  chewie = callPackage ../development/python-modules/chewie { };
 
   chex = callPackage ../development/python-modules/chex { };
 
@@ -9321,6 +9325,8 @@ self: super: with self; {
 
   orvibo = callPackage ../development/python-modules/orvibo { };
 
+  os-ken = callPackage ../development/python-modules/os-ken { };
+
   os-service-types = callPackage ../development/python-modules/os-service-types { };
 
   osc = callPackage ../development/python-modules/osc { };
@@ -9378,6 +9384,8 @@ self: super: with self; {
   ovmfvartool = callPackage ../development/python-modules/ovmfvartool { };
 
   ovoenergy = callPackage ../development/python-modules/ovoenergy { };
+
+  ovs = callPackage ../development/python-modules/ovs { };
 
   owslib = callPackage ../development/python-modules/owslib { };
 
