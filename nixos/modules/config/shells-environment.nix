@@ -25,7 +25,25 @@ let
       exportVariables =
         mapAttrsToList (n: v: ''export ${n}="${concatStringsSep ":" v}"'') allVariables;
     in
-      concatStringsSep "\n" exportVariables;
+      lib.concatLines exportVariables;
+
+  envVars =
+    let
+      absoluteVariables =
+        mapAttrs (n: toList) cfg.variables;
+
+      suffixedVariables =
+        flip mapAttrs cfg.profileRelativeEnvVars (envVar: listSuffixes:
+          concatMap (profile: map (suffix: "${profile}${suffix}") listSuffixes) cfg.profiles
+        );
+
+      allVariables =
+        zipAttrsWith (n: concatLists) [ absoluteVariables suffixedVariables ];
+
+      exportVariables =
+        mapAttrsToList (n: v: ''${n}=${concatStringsSep ":" v}'') allVariables;
+    in
+      lib.concatLines exportVariables;
 in
 
 {
@@ -184,6 +202,9 @@ in
         ${concatStringsSep "\n" (map utils.toShellPath cfg.shells)}
         /bin/sh
       '';
+
+    systemd.generators.systemd-environment-d-generator = "${config.systemd.package}/lib/systemd/user-environment-generators/30-systemd-environment-d-generator";
+    environment.etc."environment.d/00-nixos.conf".text = envVars;
 
     # For resetting environment with `. /etc/set-environment` when needed
     # and discoverability (see motivation of #30418).
