@@ -22,6 +22,7 @@ tags
 .version-suffix
 .direnv
 .envrc
+*.qcow2
 
 .DS_Store
 .mypy_cache
