@@ -179,7 +179,7 @@ stdenv.mkDerivation (finalAttrs: {
 
     # Used in GDM NixOS module
     # Don't remove.
-    initialVT = "7";
+    initialVT = "1";
     dconfDb = "${finalAttrs.finalPackage}/share/gdm/greeter-dconf-defaults";
     dconfProfile = "user-db:user\nfile-db:${finalAttrs.passthru.dconfDb}";
 
