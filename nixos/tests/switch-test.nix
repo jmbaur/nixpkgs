@@ -818,8 +818,7 @@ in {
         assert_lacks(out, "NOT restarting the following changed units:")
         assert_lacks(out, "reloading the following units:")
         assert_lacks(out, "\nrestarting the following units:")
-        assert_contains(out, "\nstarting the following units: test.service\n")
-        assert_lacks(out, "the following new units were started:")
+        assert_contains(out, "the following new units were started: test.service")
 
         # Restart the service with stopIfChanged=false
         out = switch_to_specialisation("${machine}", "simpleServiceNostop")
@@ -888,8 +887,7 @@ in {
         assert_lacks(out, "NOT restarting the following changed units:")
         assert_lacks(out, "reloading the following units:")
         assert_lacks(out, "\nrestarting the following units:")
-        assert_contains(out, "\nstarting the following units: escaped\\x2ddash.service\n")
-        assert_lacks(out, "the following new units were started:")
+        assert_contains(out, "the following new units were started: escaped\\x2ddash.service\n")
 
         # Ensure units can start with a dash
         out = switch_to_specialisation("${machine}", "unitStartingWithDash")
@@ -923,8 +921,7 @@ in {
         assert_lacks(out, "NOT restarting the following changed units:")
         assert_lacks(out, "reloading the following units:")
         assert_lacks(out, "\nrestarting the following units:")
-        assert_contains(out, "\nstarting the following units: required-service.service, test-service.service\n")
-        assert_lacks(out, "the following new units were started:")
+        assert_contains(out, "the following new units were started: required-service.service, test-service.service\n")
 
         # Unless the unit asks to be not restarted
         out = switch_to_specialisation("${machine}", "unitWithRequirementModifiedNostart")
@@ -932,8 +929,7 @@ in {
         assert_lacks(out, "NOT restarting the following changed units:")
         assert_lacks(out, "reloading the following units:")
         assert_lacks(out, "\nrestarting the following units:")
-        assert_contains(out, "\nstarting the following units: required-service.service\n")
-        assert_lacks(out, "the following new units were started:")
+        assert_contains(out, "the following new units were started: required-service.service\n")
 
         # Ensure templated units are restarted when the base unit changes
         switch_to_specialisation("${machine}", "unitWithTemplate")
@@ -942,8 +938,7 @@ in {
         assert_lacks(out, "NOT restarting the following changed units:")
         assert_lacks(out, "reloading the following units:")
         assert_lacks(out, "\nrestarting the following units:")
-        assert_contains(out, "\nstarting the following units: instantiated@one.service, instantiated@two.service\n")
-        assert_lacks(out, "the following new units were started:")
+        assert_contains(out, "the following new units were started: instantiated@one.service, instantiated@two.service\n")
 
     with subtest("failing units"):
         # Let the simple service fail
@@ -953,8 +948,7 @@ in {
         assert_lacks(out, "NOT restarting the following changed units:")
         assert_lacks(out, "reloading the following units:")
         assert_lacks(out, "\nrestarting the following units:")
-        assert_contains(out, "\nstarting the following units: test.service\n")
-        assert_lacks(out, "the following new units were started:")
+        assert_contains(out, "the following new units were started: test.service\n")
         assert_contains(out, "warning: the following units failed: test.service\n")
         assert_contains(out, "Main PID:")  # output of systemctl
 
@@ -1256,8 +1250,7 @@ in {
         assert_lacks(out, "NOT restarting the following changed units:")
         assert_lacks(out, "reloading the following units:")
         assert_lacks(out, "\nrestarting the following units:")
-        assert_contains(out, "\nstarting the following units: socket-activated.socket\n")
-        assert_lacks(out, "the following new units were started:")
+        assert_contains(out, "the following new units were started: socket-activated.socket\n")
         machine.succeed("[ -S /run/test.sock ]")
         # Socket-activation of the unit still works
         if machine.succeed("socat - UNIX-CONNECT:/run/test.sock") != "hello":
