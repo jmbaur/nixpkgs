@@ -49,7 +49,6 @@ my $new_systemd = "@systemd@";
 # To be robust against interruption, record what units need to be started etc.
 # We read these files again every time this script starts to make sure we continue
 # where the old (interrupted) script left off.
-my $start_list_file = "/run/nixos/start-list";
 my $restart_list_file = "/run/nixos/restart-list";
 my $reload_list_file = "/run/nixos/reload-list";
 
@@ -443,9 +442,9 @@ sub compare_units { ## no critic(Subroutines::ProhibitExcessComplexity)
 }
 
 # Called when a unit exists in both the old systemd and the new system and the units
-# differ. This figures out of what units are to be stopped, restarted, reloaded, started, and skipped.
+# differ. This figures out of what units are to be stopped, restarted, reloaded, and skipped.
 sub handle_modified_unit { ## no critic(Subroutines::ProhibitManyArgs, Subroutines::ProhibitExcessComplexity)
-    my ($unit, $base_name, $new_unit_file, $new_base_unit_file, $new_unit_info, $active_cur, $units_to_stop, $units_to_start, $units_to_reload, $units_to_restart, $units_to_skip) = @_;
+    my ($unit, $base_name, $new_unit_file, $new_base_unit_file, $new_unit_info, $active_cur, $units_to_stop, $units_to_reload, $units_to_restart, $units_to_skip) = @_;
 
     if ($unit eq "sysinit.target" || $unit eq "basic.target" || $unit eq "multi-user.target" || $unit eq "graphical.target" || $unit =~ /\.path$/msx || $unit =~ /\.slice$/msx) {
         # Do nothing.  These cannot be restarted directly.
@@ -513,12 +512,6 @@ sub handle_modified_unit { ## no critic(Subroutines::ProhibitManyArgs, Subroutin
                             # Only restart sockets that actually
                             # exist in new configuration:
                             if (-e "$toplevel/etc/systemd/system/$socket") {
-                                $units_to_start->{$socket} = 1;
-                                if ($units_to_start eq $units_to_restart) {
-                                    record_unit($restart_list_file, $socket);
-                                } else {
-                                    record_unit($start_list_file, $socket);
-                                }
                                 $socket_activated = 1;
                             }
                             # Remove from units to reload so we don't restart and reload
@@ -530,17 +523,11 @@ sub handle_modified_unit { ## no critic(Subroutines::ProhibitManyArgs, Subroutin
                     }
                 }
 
-                # If the unit is not socket-activated, record
-                # that this unit needs to be started below.
-                # We write this to a file to ensure that the
-                # service gets restarted if we're interrupted.
-                if (!$socket_activated) {
-                    $units_to_start->{$unit} = 1;
-                    if ($units_to_start eq $units_to_restart) {
-                        record_unit($restart_list_file, $unit);
-                    } else {
-                        record_unit($start_list_file, $unit);
-                    }
+                # If the unit is not socket-activated, record that this unit
+                # needs to be started below. We write this to a file to ensure
+                # that the service gets restarted if we're interrupted.
+                if (!$socket_activated && !defined $new_unit_info) {
+                    record_unit($restart_list_file, $unit);
                 }
 
                 $units_to_stop->{$unit} = 1;
@@ -556,12 +543,9 @@ sub handle_modified_unit { ## no critic(Subroutines::ProhibitManyArgs, Subroutin
 }
 
 # Figure out what units need to be stopped, started, restarted or reloaded.
-my (%units_to_stop, %units_to_skip, %units_to_start, %units_to_restart, %units_to_reload);
+my (%units_to_stop, %units_to_skip, %units_to_restart, %units_to_reload);
 
 my %units_to_filter; # units not shown
-
-%units_to_start = map { $_ => 1 }
-    split(/\n/msx, read_file($start_list_file, err_mode => "quiet") // "");
 
 %units_to_restart = map { $_ => 1 }
     split(/\n/msx, read_file($restart_list_file, err_mode => "quiet") // "");
@@ -607,8 +591,6 @@ while (my ($unit, $state) = each(%{$active_cur})) {
             # should not be the case.  Just ignore it.
             if ($unit ne "suspend.target" && $unit ne "hibernate.target" && $unit ne "hybrid-sleep.target") {
                 if (!(parse_systemd_bool(\%new_unit_info, "Unit", "RefuseManualStart", 0) || parse_systemd_bool(\%new_unit_info, "Unit", "X-OnlyManualStart", 0))) {
-                    $units_to_start{$unit} = 1;
-                    record_unit($start_list_file, $unit);
                     # Don't spam the user with target units that always get started.
                     if (($ENV{"STC_DISPLAY_ALL_UNITS"} // "") ne "1") {
                         $units_to_filter{$unit} = 1;
@@ -637,7 +619,7 @@ while (my ($unit, $state) = each(%{$active_cur})) {
             my %new_unit_info = parse_unit($new_unit_file, $new_base_unit_file);
             my $diff = compare_units(\%cur_unit_info, \%new_unit_info);
             if ($diff == 1) {
-                handle_modified_unit($unit, $base_name, $new_unit_file, $new_base_unit_file, \%new_unit_info, $active_cur, \%units_to_stop, \%units_to_start, \%units_to_reload, \%units_to_restart, \%units_to_skip);
+                handle_modified_unit($unit, $base_name, $new_unit_file, $new_base_unit_file, \%new_unit_info, $active_cur, \%units_to_stop, \%units_to_reload, \%units_to_restart, \%units_to_skip);
             } elsif ($diff == 2 and not $units_to_restart{$unit}) {
                 $units_to_reload{$unit} = 1;
                 record_unit($reload_list_file, $unit);
@@ -689,7 +671,7 @@ foreach my $mount_point (keys(%{$cur_fss})) {
             record_unit($restart_list_file, $unit);
         }
     } elsif ($cur->{options} ne $new->{options}) {
-        # Mount options changes, so remount it.
+        # Mount options changed, so remount it.
         $units_to_reload{$unit} = 1;
         record_unit($reload_list_file, $unit);
     }
@@ -770,12 +752,6 @@ if ($action eq "dry-activate") {
         my $base_name = $base_unit;
         $base_name =~ s/\.[[:lower:]]*$//msx;
 
-        # Start units if they were not active previously
-        if (not defined($active_cur->{$unit})) {
-            $units_to_start{$unit} = 1;
-            next;
-        }
-
         handle_modified_unit($unit, $base_name, $new_unit_file, $new_base_unit_file, undef, $active_cur, \%units_to_restart, \%units_to_restart, \%units_to_reload, \%units_to_restart, \%units_to_skip);
     }
     unlink($dry_restart_by_activation_file);
@@ -798,10 +774,6 @@ if ($action eq "dry-activate") {
     }
     if (scalar(keys(%units_to_restart)) > 0) {
         print STDERR "would restart the following units: ", join(", ", sort(keys(%units_to_restart))), "\n";
-    }
-    my @units_to_start_filtered = filter_units(\%units_to_start);
-    if (scalar(@units_to_start_filtered)) {
-        print STDERR "would start the following units: ", join(", ", @units_to_start_filtered), "\n";
     }
     exit 0;
 }
@@ -842,13 +814,6 @@ foreach (split(/\n/msx, read_file($restart_by_activation_file, err_mode => "quie
 
     my $base_name = $base_unit;
     $base_name =~ s/\.[[:lower:]]*$//msx;
-
-    # Start units if they were not active previously
-    if (not defined($active_cur->{$unit})) {
-        $units_to_start{$unit} = 1;
-        record_unit($start_list_file, $unit);
-        next;
-    }
 
     handle_modified_unit($unit, $base_name, $new_unit_file, $new_base_unit_file, undef, $active_cur, \%units_to_restart, \%units_to_restart, \%units_to_reload, \%units_to_restart, \%units_to_skip);
 }
@@ -913,12 +878,6 @@ system("$new_systemd/bin/systemctl", "restart", "sysinit-reactivation.target") =
 if (scalar(keys(%units_to_reload)) > 0) {
     for my $unit (keys(%units_to_reload)) {
         if (!unit_is_active($unit)) {
-            # Figure out if we need to start the unit
-            my %unit_info = parse_unit("$toplevel/etc/systemd/system/$unit", "$toplevel/etc/systemd/system/$unit");
-            if (!(parse_systemd_bool(\%unit_info, "Unit", "RefuseManualStart", 0) || parse_systemd_bool(\%unit_info, "Unit", "X-OnlyManualStart", 0))) {
-                $units_to_start{$unit} = 1;
-                record_unit($start_list_file, $unit);
-            }
             # Don't reload the unit, reloading would fail
             delete %units_to_reload{$unit};
             unrecord_unit($reload_list_file, $unit);
@@ -941,18 +900,9 @@ if (scalar(keys(%units_to_restart)) > 0) {
     unlink($restart_list_file);
 }
 
-# Start all active targets, as well as changed units we stopped above.
-# The latter is necessary because some may not be dependencies of the
-# targets (i.e., they were manually started).  FIXME: detect units
-# that are symlinks to other units.  We shouldn't start both at the
-# same time because we'll get a "Failed to add path to set" error from
-# systemd.
-my @units_to_start_filtered = filter_units(\%units_to_start);
-if (scalar(@units_to_start_filtered)) {
-    print STDERR "starting the following units: ", join(", ", @units_to_start_filtered), "\n"
-}
-system("$new_systemd/bin/systemctl", "start", "--", sort(keys(%units_to_start))) == 0 or $res = 4;
-unlink($start_list_file);
+# Start multi-user.target, which will subsequently start all it's dependencies
+# in "replace" mode.
+system("$new_systemd/bin/systemctl", "start", "--job-mode=replace", "--", "multi-user.target") == 0 or $res = 4;
 
 
 # Print failed and new units.
