@@ -2140,5 +2140,31 @@ After=dev-disk-by\x2dlabel-root.device
                 "dev-disk-by\\x2dlabel-root.device"
             );
         }
+
+        {
+            let mut unit_info = HashMap::new();
+
+            let test_unit = std::io::Cursor::new(
+                r#"[Service]
+ExecStart=foo \
+; this is a comment
+# this is also a comment
+bar
+"#,
+            );
+            super::parse_systemd_ini(&mut unit_info, test_unit).unwrap();
+
+            assert_eq!(
+                unit_info
+                    .get("Service")
+                    .unwrap()
+                    .get("ExecStart")
+                    .unwrap()
+                    .first()
+                    .unwrap(),
+                "foobar"
+            );
+        }
     }
+
 }
