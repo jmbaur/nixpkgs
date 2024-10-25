@@ -4,10 +4,10 @@
 
 linkFarm "zig-packages" [
   {
-    name = "12207831bce7d4abce57b5a98e8f3635811cfefd160bca022eb91fe905d36a02cf25";
+    name = "1220523a3a301cbfbd83a374e2a69073fa14b211f2f6aaa4fc9497c936feaa67f738";
     path = fetchzip {
-      url = "https://codeberg.org/dude_the_builder/ziglyph/archive/b89d43d1e3fb01b6074bc1f7fc980324b04d26a5.tar.gz";
-      hash = "sha256-e/zYB9w6vvHUBJzjlocSjpJu3qao7sXjBsfUO9oDXyg=";
+      url = "https://github.com/rockorager/libvaxis/archive/v0.4.1/f0eaa3c831f6376e7fa0519c275cdcb764580e12.tar.gz";
+      hash = "sha256-UTpv0cdb98RU48Rc0z3AvYO6SDXsKJMFrwm10of6nCE=";
     };
   }
 ]

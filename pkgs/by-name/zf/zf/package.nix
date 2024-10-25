@@ -10,13 +10,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "zf";
-  version = "0.9.2";
+  version = "0.10.0";
 
   src = fetchFromGitHub {
     owner = "natecraddock";
     repo = "zf";
     rev = "refs/tags/${finalAttrs.version}";
-    hash = "sha256-8KfzsDG9sZ/jMOusz2ydt3oytp891vKOpCUlPAwS8TE=";
+    hash = "sha256-ppz5Ll2hyjW78XFdtn/o674QFkNSc7XIqy3jV1A1BNk=";
   };
 
   nativeBuildInputs = [
