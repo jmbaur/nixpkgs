@@ -580,6 +580,7 @@ in {
     patches = [
       ./u-boot-radxa.patch
       ./debug.patch
+      ./devicetree.patch
     ];
 
     postUnpack = ''
@@ -605,6 +606,9 @@ in {
       PYTHON=${buildPackages.python27}/bin/python2 \
         RKBIN="$PWD/rkbin" \
         ./make.sh rock-5c-rk3588s
+      PYTHON=${buildPackages.python27}/bin/python2 \
+        RKBIN="$PWD/rkbin" \
+        ./make.sh rock-5c-rk3588s --fdt arch/arm/dts/rk3588s-rock-5c.dtb
 
       ./tools/mkimage \
         -n rk3588 \
