@@ -236,6 +236,17 @@ nix-env --store "$mountPoint" "${extraBuildFlags[@]}" \
 mkdir -m 0755 -p "$mountPoint/etc"
 touch "$mountPoint/etc/NIXOS"
 
+current_system=$(nix eval --extra-experimental-features 'nix-command' --impure --expr 'builtins.currentSystem')
+target_system=$(jq --raw-output '."org.nixos.bootspec.v1".system' "$mountPoint"/nix/var/nix/profiles/system/boot.json)
+
+magics_json=@magics@
+jq --raw-output --arg system "$target_system" '.magics.$system' $magics_json
+
+binfmt_helper=
+if [[ $current_system != "$target_system" ]]; then
+    binfmt_helper=
+fi
+
 # Switch to the new system configuration.  This will install Grub with
 # a menu default pointing at the kernel/initrd/etc of the new
 # configuration.
@@ -244,20 +255,9 @@ if [[ -z $noBootLoader ]]; then
     # Grub needs an mtab.
     ln -sfn /proc/mounts "$mountPoint"/etc/mtab
     export mountPoint
-    NIXOS_INSTALL_BOOTLOADER=1 nixos-enter --root "$mountPoint" -c "$(cat <<'EOF'
-      set -e
-      # Clear the cache for executable locations. They were invalidated by the chroot.
-      hash -r
-      # Create a bind mount for each of the mount points inside the target file
-      # system. This preserves the validity of their absolute paths after changing
-      # the root with `nixos-enter`.
-      # Without this the bootloader installation may fail due to options that
-      # contain paths referenced during evaluation, like initrd.secrets.
-      # when not root, re-execute the script in an unshared namespace
-      mount --rbind --mkdir / "$mountPoint"
-      mount --make-rslave "$mountPoint"
-      /run/current-system/bin/switch-to-configuration boot
-      umount -R "$mountPoint" && (rmdir "$mountPoint" 2>/dev/null || true)
+    unshare --mount --user --map-root-user -- "$BASH" -c "$(cat <<'EOF'
+      mount -t binfmt_misc binfmt_misc /proc/sys/fs/binfmt_misc
+      nixos-enter --root "$mountPoint" @bootloaderInstallScript@
 EOF
 )"
 fi

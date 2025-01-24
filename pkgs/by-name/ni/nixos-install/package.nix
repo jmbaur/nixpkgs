@@ -7,6 +7,7 @@
   nixos-enter,
   util-linuxMinimal,
   nixosTests,
+  qemu-user,
 }:
 replaceVarsWith {
   name = "nixos-install";
@@ -15,10 +16,15 @@ replaceVarsWith {
   replacements = {
     inherit runtimeShell;
 
+    bootloaderInstallScript = ./bootloader-install-script.sh;
+
+    magics = ../../../../magic.json;
+
     path = lib.makeBinPath [
       jq
       nixos-enter
       util-linuxMinimal
+      qemu-user
     ];
   };
 
