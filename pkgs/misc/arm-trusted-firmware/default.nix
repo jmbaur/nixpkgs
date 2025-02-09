@@ -36,7 +36,8 @@ let
     in
 
     stdenv.mkDerivation (
-      rec {
+      finalAttrs:
+      {
 
         pname = "arm-trusted-firmware${lib.optionalString (platform != null) "-${platform}"}";
         version = "2.10.0";
@@ -44,7 +45,7 @@ let
         src = fetchFromGitHub {
           owner = "ARM-software";
           repo = "arm-trusted-firmware";
-          rev = "v${version}";
+          rev = "v${finalAttrs.version}";
           hash = "sha256-CAuftVST9Fje/DWaaoX0K2SfWwlGMaUFG4huuwsTOSU=";
         };
 
@@ -111,7 +112,7 @@ in
 {
   inherit buildArmTrustedFirmware;
 
-  armTrustedFirmwareTools = buildArmTrustedFirmware rec {
+  armTrustedFirmwareTools = buildArmTrustedFirmware {
     # Normally, arm-trusted-firmware builds the build tools for buildPlatform
     # using CC_FOR_BUILD (or as it calls it HOSTCC). Since want to build them
     # for the hostPlatform here, we trick it by overriding the HOSTCC setting
