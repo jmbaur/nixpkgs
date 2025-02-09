@@ -1,0 +1,13 @@
+diff --git a/plat/rockchip/rk3399/drivers/m0/Makefile b/plat/rockchip/rk3399/drivers/m0/Makefile
+index 32446efb0..bc7c5fc41 100644
+--- a/plat/rockchip/rk3399/drivers/m0/Makefile
++++ b/plat/rockchip/rk3399/drivers/m0/Makefile
+@@ -102,7 +102,7 @@ $(ELF) : $(OBJS) $(OBJS_COMMON) $(LINKERFILE)
+ 
+ %.bin : %.elf
+ 	$(s)echo "  BIN     $@"
+-	$(q)$(rk3399-m0-oc) -O binary $< $@
++	$(q)$(M0_CROSS_COMPILE)objcopy -O binary $< $@
+ 
+ $(ELF_PMU) : $(OBJS_COMMON) $(OBJS_PMU) $(LINKERFILE)
+ 	$(s)echo "  LD      $@"

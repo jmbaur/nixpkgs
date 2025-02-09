@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitHub,
   fetchFromGitLab,
+  dtc,
   openssl,
   pkgsCross,
   buildPackages,
@@ -40,40 +41,57 @@ let
       {
 
         pname = "arm-trusted-firmware${lib.optionalString (platform != null) "-${platform}"}";
-        version = "2.10.0";
+        version = "2.12.0";
 
         src = fetchFromGitHub {
           owner = "ARM-software";
           repo = "arm-trusted-firmware";
-          rev = "v${finalAttrs.version}";
-          hash = "sha256-CAuftVST9Fje/DWaaoX0K2SfWwlGMaUFG4huuwsTOSU=";
+          tag = "v${finalAttrs.version}";
+          hash = "sha256-PCUKLfmvIBiJqVmKSUKkNig1h44+4RypZ04BvJ+HP6M=";
         };
 
-        patches = lib.optionals deleteHDCPBlobBeforeBuild [
-          # this is a rebased version of https://gitlab.com/vicencb/kevinboot/-/blob/master/atf.patch
-          ./remove-hdcp-blob.patch
-        ];
+        patches =
+          [
+            ./m0-objcopy.patch
+          ]
+          ++ lib.optionals deleteHDCPBlobBeforeBuild [
+            # this is a rebased version of https://gitlab.com/vicencb/kevinboot/-/blob/master/atf.patch
+            ./remove-hdcp-blob.patch
+          ];
 
         postPatch = lib.optionalString deleteHDCPBlobBeforeBuild ''
           rm plat/rockchip/rk3399/drivers/dp/hdcp.bin
         '';
 
+        strictDeps = true;
+
         depsBuildBuild = [ buildPackages.stdenv.cc ];
 
-        # For Cortex-M0 firmware in RK3399
-        nativeBuildInputs = [ pkgsCross.arm-embedded.stdenv.cc ];
+        nativeBuildInputs = [
+          dtc
+
+          # For Cortex-M0 firmware in RK3399
+          pkgsCross.arm-embedded.stdenv.cc
+        ];
 
         buildInputs = [ openssl ];
+
+        env.NIX_CFLAGS_COMPILE = toString [
+          # Accommodate -flto:
+          "-ffat-lto-objects"
+        ];
 
         makeFlags =
           [
             "HOSTCC=$(CC_FOR_BUILD)"
             "M0_CROSS_COMPILE=${pkgsCross.arm-embedded.stdenv.cc.targetPrefix}"
             "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
-            # binutils 2.39 regression
-            # `warning: /build/source/build/rk3399/release/bl31/bl31.elf has a LOAD segment with RWX permissions`
-            # See also: https://developer.trustedfirmware.org/T996
-            "LDFLAGS=-no-warn-rwx-segments"
+            "OD=$(OBJDUMP)"
+            "OC=$(OBJCOPY)"
+            # GNU's assembler doesn't recognize the `-x` option, so instead,
+            # use the GNU C compiler, which does recognize it.
+            "HOSTAS=$(CC_FOR_BUILD)"
+            "AS=$(CC)"
           ]
           ++ (lib.optional (platform != null) "PLAT=${platform}")
           ++ extraMakeFlags;
@@ -90,8 +108,7 @@ let
         hardeningDisable = [ "all" ];
         dontStrip = true;
 
-        # Fatal error: can't create build/sun50iw1p1/release/bl31/sunxi_clocks.o: No such file or directory
-        enableParallelBuilding = false;
+        enableParallelBuilding = true;
 
         meta =
           with lib;
@@ -119,7 +136,7 @@ in
     # and, to be safe, remove CC_FOR_BUILD from the environment.
     depsBuildBuild = [ ];
     extraMakeFlags = [
-      "HOSTCC=${stdenv.cc.targetPrefix}gcc"
+      "HOSTCC=${stdenv.cc.targetPrefix}cc"
       "fiptool"
       "certtool"
     ];
@@ -181,17 +198,6 @@ in
     platform = "rk3588";
     extraMeta.platforms = [ "aarch64-linux" ];
     filesToInstall = [ "build/${platform}/release/bl31/bl31.elf" ];
-
-    # TODO: remove this once the following get merged:
-    # 1: https://review.trustedfirmware.org/c/TF-A/trusted-firmware-a/+/21840
-    # 2: https://review.trustedfirmware.org/c/ci/tf-a-ci-scripts/+/21833
-    src = fetchFromGitLab {
-      domain = "gitlab.collabora.com";
-      owner = "hardware-enablement/rockchip-3588";
-      repo = "trusted-firmware-a";
-      rev = "002d8e85ce5f4f06ebc2c2c52b4923a514bfa701";
-      hash = "sha256-1XOG7ILIgWa3uXUmAh9WTfSGLD/76OsmWrUhIxm/zTg=";
-    };
   };
 
   armTrustedFirmwareS905 = buildArmTrustedFirmware rec {
