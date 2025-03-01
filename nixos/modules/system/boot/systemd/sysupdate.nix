@@ -119,6 +119,7 @@ in
   config = lib.mkIf cfg.enable {
 
     systemd.additionalUpstreamSystemUnits = [
+      "systemd-sysupdated.service"
       "systemd-sysupdate.service"
       "systemd-sysupdate.timer"
       "systemd-sysupdate-reboot.service"
