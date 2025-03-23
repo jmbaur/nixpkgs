@@ -31,7 +31,6 @@ let
       changelog = "https://github.com/sched-ext/scx/releases/tag/v${versionInfo.scx.version}";
       license = lib.licenses.gpl2Only;
       platforms = lib.platforms.linux;
-      badPlatforms = [ "aarch64-linux" ];
       maintainers = with lib.maintainers; [ johnrtitor ];
     };
   };
