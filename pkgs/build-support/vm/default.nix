@@ -2,8 +2,8 @@
   lib,
   pkgs,
   customQemu ? null,
-  kernel ? pkgs.linux,
-  img ? pkgs.stdenv.hostPlatform.linux-kernel.target,
+  kernel ? pkgs.pkgsBuildBuild.linux,
+  img ? pkgs.pkgsBuildBuild.stdenv.hostPlatform.linux-kernel.target,
   storeDir ? builtins.storeDir,
   rootModules ? [
     "virtio_pci"
@@ -21,6 +21,7 @@ let
   inherit (pkgs.pkgsBuildBuild)
     mtdutils
     bash
+    glibc
     bashInteractive
     busybox
     coreutils
@@ -733,9 +734,9 @@ rec {
 
             PATH=$PATH:${
               lib.makeBinPath [
-                pkgs.dpkg
-                pkgs.glibc
-                pkgs.xz
+                dpkg
+                glibc
+                xz
               ]
             }
 
