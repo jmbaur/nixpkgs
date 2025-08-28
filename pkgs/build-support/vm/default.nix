@@ -18,14 +18,14 @@
 }:
 
 let
-  inherit (pkgs.buildPackages)
+  inherit (pkgs.pkgsBuildBuild)
+    mtdutils
     bash
     bashInteractive
     busybox
     coreutils
     cpio
     dpkg
-    virtiofsd
     e2fsprogs
     fetchurl
     kmod
@@ -38,6 +38,9 @@ let
     runCommand
     stdenv
     util-linux
+    zstd
+    xz
+    virtiofsd
     writeScript
     writeText
     ;
@@ -70,18 +73,18 @@ rec {
 
         # Copy what we need from Glibc.
         cp -p \
-          ${pkgs.stdenv.cc.libc}/lib/ld-*.so.? \
-          ${pkgs.stdenv.cc.libc}/lib/libc.so.* \
-          ${pkgs.stdenv.cc.libc}/lib/libm.so.* \
-          ${pkgs.stdenv.cc.libc}/lib/libresolv.so.* \
-          ${pkgs.stdenv.cc.libc}/lib/libpthread.so.* \
-          ${pkgs.zstd.out}/lib/libzstd.so.* \
-          ${pkgs.xz.out}/lib/liblzma.so.* \
+          ${stdenv.cc.libc}/lib/ld-*.so.? \
+          ${stdenv.cc.libc}/lib/libc.so.* \
+          ${stdenv.cc.libc}/lib/libm.so.* \
+          ${stdenv.cc.libc}/lib/libresolv.so.* \
+          ${stdenv.cc.libc}/lib/libpthread.so.* \
+          ${zstd.out}/lib/libzstd.so.* \
+          ${xz.out}/lib/liblzma.so.* \
           $out/lib
 
         # Copy BusyBox.
-        cp -pd ${pkgs.busybox}/bin/* $out/bin
-        cp -pd ${pkgs.kmod}/bin/* $out/bin
+        cp -pd ${busybox}/bin/* $out/bin
+        cp -pd ${kmod}/bin/* $out/bin
 
         # Run patchelf to make the programs refer to the copied libraries.
         for i in $out/bin/* $out/lib/*; do if ! test -L $i; then nuke-refs $i; fi; done
@@ -438,8 +441,8 @@ rec {
       stdenv.mkDerivation {
         name = "extract-file-mtd";
         buildInputs = [
-          pkgs.util-linux
-          pkgs.mtdutils
+          util-linux
+          mtdutils
         ];
         buildCommand = ''
           ln -s ${kernel}/lib /lib
