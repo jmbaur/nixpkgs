@@ -18,28 +18,33 @@
 }:
 
 let
-  inherit (pkgs)
+  inherit (pkgs.buildPackages)
     bash
     bashInteractive
     busybox
-    cpio
     coreutils
+    cpio
+    dpkg
     e2fsprogs
     fetchurl
     kmod
+    nixfmt
+    nukeReferences
+    perl
+    perlPackages
+    qemu_kvm
     rpm
+    runCommand
     stdenv
     util-linux
-    buildPackages
     writeScript
     writeText
-    runCommand
     ;
 in
 rec {
   qemu-common = import ../../../nixos/lib/qemu-common.nix { inherit lib pkgs; };
 
-  qemu = buildPackages.qemu_kvm;
+  qemu = qemu_kvm;
 
   modulesClosure = pkgs.makeModulesClosure {
     kernel = lib.getOutput "modules" kernel;
@@ -52,7 +57,7 @@ rec {
   initrdUtils =
     runCommand "initrd-utils"
       {
-        nativeBuildInputs = [ buildPackages.nukeReferences ];
+        nativeBuildInputs = [ nukeReferences ];
         allowedReferences = [
           "out"
           modulesClosure
@@ -820,8 +825,8 @@ rec {
     runCommand "${name}.nix"
       {
         nativeBuildInputs = [
-          buildPackages.perl
-          buildPackages.perlPackages.XMLSimple
+          perl
+          perlPackages.XMLSimple
         ];
         inherit archs;
       }
@@ -908,9 +913,9 @@ rec {
     runCommand "${name}.nix"
       {
         nativeBuildInputs = [
-          buildPackages.perl
-          buildPackages.dpkg
-          buildPackages.nixfmt
+          perl
+          dpkg
+          nixfmt
         ];
       }
       ''
