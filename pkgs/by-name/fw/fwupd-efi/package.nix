@@ -8,6 +8,7 @@
   gnu-efi,
   python3,
   python3Packages,
+  lld,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     python3
     python3Packages.pefile
+    lld
   ];
 
   buildInputs = [
@@ -38,6 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
       efi/generate_binary.py \
       efi/generate_sbat.py
   '';
+
+  env.CC_LD = "lld";
 
   mesonFlags = [
     "-Defi-includedir=${gnu-efi}/include/efi"
