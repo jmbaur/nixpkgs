@@ -16864,12 +16864,6 @@
     githubId = 6412377;
     name = "Samuel Ruprecht";
   };
-  melling = {
-    email = "mattmelling@fastmail.com";
-    github = "mattmelling";
-    githubId = 1215331;
-    name = "Matt Melling";
-  };
   melon = {
     email = "melontime05@gmail.com";
     github = "BlaiZephyr";
