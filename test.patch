@@ -1,0 +1,58 @@
+diff --git a/egg-compile.scm b/egg-compile.scm
+index f7306d39..7b7d0f39 100644
+--- a/egg-compile.scm
++++ b/egg-compile.scm
+@@ -918,7 +918,7 @@
+          (out (qs* (target-file (conc sname ".static" ext) mode)
+ 		   platform #t))
+          (outlnk (qs* (conc sname +link-file-extension+) platform #t))
+-         (dest (effective-destination-repository mode))
++         (dest (effective-destination-repository mode #t))
+          (dfile (qs* dest platform #t))
+          (ddir (shell-variable "DESTDIR" platform)))
+     (print "\n" mkdir " " ddir dfile)
+@@ -936,7 +936,7 @@
+          (mkdir (mkdir-command platform))
+          (sname (prefix srcdir name))
+          (out (qs* (target-file (conc sname ext) mode) platform #t))
+-         (dest (effective-destination-repository mode))
++         (dest (effective-destination-repository mode #t))
+          (dfile (qs* dest platform #t))
+          (ddir (shell-variable "DESTDIR" platform))
+          (destf (qs* (conc dest "/" output-file ext) platform #t)))
+@@ -957,7 +957,7 @@
+          (sname (prefix srcdir name))
+          (out (qs* (target-file (conc sname ".import.scm") mode)
+ 		   platform #t))
+-         (dest (effective-destination-repository mode))
++         (dest (effective-destination-repository mode #t))
+          (dfile (qs* dest platform #t))
+          (ddir (shell-variable "DESTDIR" platform)))
+     (print "\n" mkdir " " ddir dfile)
+@@ -971,7 +971,7 @@
+          (mkdir (mkdir-command platform))
+          (out (qs* (prefix srcdir (conc types-file ".types"))
+ 		   platform #t))
+-         (dest (effective-destination-repository mode))
++         (dest (effective-destination-repository mode #t))
+          (dfile (qs* dest platform #t))
+          (ddir (shell-variable "DESTDIR" platform)))
+     (print "\n" mkdir " " ddir dfile)
+@@ -985,7 +985,7 @@
+          (mkdir (mkdir-command platform))
+          (out (qs* (prefix srcdir (conc inline-file ".inline"))
+ 		   platform #t))
+-         (dest (effective-destination-repository mode))
++         (dest (effective-destination-repository mode #t))
+          (dfile (qs* dest platform #t))
+          (ddir (shell-variable "DESTDIR" platform)))
+     (print "\n" mkdir " " ddir dfile)
+@@ -1160,7 +1160,7 @@ EOF
+   (let* ((infostr (with-output-to-string (cut pp info)))
+          (dcmd (remove-file-command platform))
+          (mkdir (mkdir-command platform))
+-         (dir (destination-repository mode))
++         (dir (destination-repository mode #t))
+          (qdir (qs* dir platform #t))
+          (dest (qs* (make-pathname dir name +egg-info-extension+)
+ 		    platform #t))

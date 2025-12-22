@@ -4201,6 +4201,7 @@ with pkgs;
     fetchegg
     eggDerivation
     chicken
+    chicken-bootstrap
     egg2nix
     ;
 
