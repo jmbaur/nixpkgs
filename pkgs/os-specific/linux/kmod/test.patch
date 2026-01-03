@@ -1,0 +1,94 @@
+diff --git a/meson.build b/meson.build
+index a0cf675..fa92085 100644
+--- a/meson.build
++++ b/meson.build
+@@ -193,6 +193,7 @@ datadir = prefixdir / get_option('datadir')
+ 
+ distconfdir = get_option('distconfdir')
+ moduledir = get_option('moduledir')
++rootdir = get_option('rootdir')
+ 
+ bashcompletiondir = get_option('bashcompletiondir')
+ fishcompletiondir = get_option('fishcompletiondir')
+@@ -204,6 +205,7 @@ _customdirs = [
+   # The defaults are hard-coded due to historical reasons
+   ['distconfdir', prefixdir / 'lib',  'DISTCONFDIR'],
+   ['moduledir',   '/lib/modules',     'MODULE_DIRECTORY'],
++  ['rootdir',     '',                 'ROOT_DIRECTORY'],
+ ]
+ 
+ foreach tuple : _customdirs
+@@ -478,6 +480,7 @@ _kmod_variables = [
+   'sysconfdir=' + sysconfdir,
+   'distconfdir=' + distconfdir,
+   'module_directory=' + moduledir,
++  'root_directory=' + rootdir,
+ ]
+ 
+ # Don't (space) escape variables with space-separated lists, for consistency
+diff --git a/meson_options.txt b/meson_options.txt
+index 3d41fae..3f1ddb9 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -12,6 +12,12 @@ option(
+   description : 'Directory to look for kernel modules. Default: /lib/modules',
+ )
+ 
++option(
++  'rootdir',
++  type : 'string',
++  description : 'Root directory to look for kernel modules. Default: ""',
++)
++
+ option(
+   'bashcompletiondir',
+   type : 'string',
+diff --git a/tools/depmod.c b/tools/depmod.c
+index 0126124..509f2a3 100644
+--- a/tools/depmod.c
++++ b/tools/depmod.c
+@@ -92,7 +92,8 @@ static void help(void)
+ 	       "\t-h, --help           show this help\n"
+ 	       "\n"
+ 	       "The following options are useful for people managing distributions:\n"
+-	       "\t-b, --basedir=DIR    Root path (default: /).\n"
++	       "\t-b, --basedir=DIR    Root path (default: " ROOT_DIRECTORY
++				 "/).\n"
+ 	       "\t-m, --moduledir=DIR  Module directory (default: " MODULE_DIRECTORY
+ 	       ").\n"
+ 	       "\t-o, --outdir=DIR     Output root path (default: same as <basedir>).\n"
+@@ -2922,7 +2923,7 @@ static int do_depmod(int argc, char *argv[])
+ 	const char *system_map = NULL;
+ 	const char *module_symvers = NULL;
+ 	const char *null_kmod_config = NULL;
+-	const char *root = "";
++	const char *root = ROOT_DIRECTORY;
+ 	const char *module_directory = MODULE_DIRECTORY;
+ 	struct utsname un;
+ 	struct kmod_ctx *ctx = NULL;
+diff --git a/tools/modinfo.c b/tools/modinfo.c
+index 6f8147e..0745dfc 100644
+--- a/tools/modinfo.c
++++ b/tools/modinfo.c
+@@ -370,7 +370,7 @@ static int do_modinfo(int argc, char *argv[])
+ 	char dirname_buf[PATH_MAX];
+ 	const char *dirname = NULL;
+ 	const char *kversion = NULL;
+-	const char *root = NULL;
++	const char *root = ROOT_DIRECTORY;
+ 	const char *null_config = NULL;
+ 	bool arg_is_modname = false;
+ 	int i, err;
+diff --git a/tools/modprobe.c b/tools/modprobe.c
+index b172e97..a47daae 100644
+--- a/tools/modprobe.c
++++ b/tools/modprobe.c
+@@ -755,7 +755,7 @@ static int do_modprobe(int argc, char **orig_argv)
+ 	int nargs = 0, n_config_paths = 0;
+ 	char dirname_buf[PATH_MAX];
+ 	const char *dirname = NULL;
+-	const char *root = NULL;
++	const char *root = ROOT_DIRECTORY;
+ 	const char *kversion = NULL;
+ 	int use_all = 0;
+ 	int do_remove = 0;

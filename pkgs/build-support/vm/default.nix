@@ -221,11 +221,9 @@ let
     fi
 
     # Set up automatic kernel module loading.
-    export MODULE_DIR=${lib.getOutput "modules" kernel}/lib/modules/
     ${coreutils}/bin/cat <<EOF > /run/modprobe
     #! ${bash}/bin/sh
-    export MODULE_DIR=$MODULE_DIR
-    exec ${kmod}/bin/modprobe "\$@"
+    exec ${kmod}/bin/modprobe -d ${lib.getOutput "modules" kernel} "\$@"
     EOF
     ${coreutils}/bin/chmod 755 /run/modprobe
     echo /run/modprobe > /proc/sys/kernel/modprobe

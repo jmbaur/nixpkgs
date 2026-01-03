@@ -11,6 +11,8 @@ buildEnv {
 
   paths = modules;
 
+  nativeBuildInputs = [ kmod ];
+
   postBuild = ''
     source ${stdenvNoCC}/setup
 
@@ -34,7 +36,7 @@ buildEnv {
     # kernel version number, otherwise depmod will use `uname -r'.
     if test -w $out/lib/modules/$kernelVersion; then
         rm -f $out/lib/modules/$kernelVersion/modules.!(builtin*|order*)
-        ${kmod}/bin/depmod -b $out -C $out/etc/depmod.d -a $kernelVersion
+        depmod -b $out -C $out/etc/depmod.d -a $kernelVersion
     fi
   '';
 }
