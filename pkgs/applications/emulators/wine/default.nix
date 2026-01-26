@@ -56,6 +56,10 @@ let
       src = sources.stable;
       useStaging = false;
     };
+    stable_11 = {
+      src = sources.stable_11;
+      useStaging = false;
+    };
     unstable = {
       src = sources.unstable;
       useStaging = false;

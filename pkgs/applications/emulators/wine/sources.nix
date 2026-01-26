@@ -131,6 +131,26 @@ rec {
     '';
   };
 
+  stable_11 = fetchurl rec {
+    version = "11.0";
+    url = "https://dl.winehq.org/wine/source/11.0/wine-${version}.tar.xz";
+    hash = "sha256-wHpoV5M8H8YN/1RI1585ySSBwenbWqYo250DWERuBwE=";
+
+    inherit (stable) gecko32 gecko64;
+
+    ## see http://wiki.winehq.org/Mono
+    mono = fetchurl rec {
+      version = "10.0.0";
+      url = "https://dl.winehq.org/wine/wine-mono/${version}/wine-mono-${version}-x86.msi";
+      hash = "sha256-26ynPl0J96OnwVetBCia+cpHw87XAS1GVEpgcEaQK4c=";
+    };
+
+    patches = [
+      # Also look for root certificates at $NIX_SSL_CERT_FILE
+      ./cert-path.patch
+    ];
+  };
+
   unstable = fetchurl rec {
     # NOTE: Don't forget to change the hash for staging as well.
     version = "10.20";

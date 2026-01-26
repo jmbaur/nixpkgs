@@ -14266,6 +14266,8 @@ with pkgs;
           waylandFull
           yabridge
           fonts
+          stable_11
+          stableFull_11
           ;
       }
     );
