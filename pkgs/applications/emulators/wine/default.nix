@@ -71,6 +71,11 @@ let
       pnameSuffix = "-staging";
       useStaging = true;
     };
+    staging_11 = {
+      src = sources.unstable_11;
+      pnameSuffix = "-staging";
+      useStaging = true;
+    };
     # "yabridge" enables staging too --- we are not interested in
     # yabridge without the staging patches applied.
     yabridge = {

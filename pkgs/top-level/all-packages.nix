@@ -14268,6 +14268,8 @@ with pkgs;
           fonts
           stable_11
           stableFull_11
+          staging_11
+          stagingFull_11
           ;
       }
     );

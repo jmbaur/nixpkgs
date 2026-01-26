@@ -214,6 +214,32 @@ rec {
     '';
   };
 
+  unstable_11 = fetchurl rec {
+    # NOTE: Don't forget to change the hash for staging as well.
+    version = "11.1";
+    url = "https://dl.winehq.org/wine/source/11.x/wine-${version}.tar.xz";
+    hash = "sha256-v0x8j7XYwfZW8wor6pOHDIXxP/gxGrL2Hd75AOsoy48=";
+
+    patches = [
+      # Also look for root certificates at $NIX_SSL_CERT_FILE
+      ./cert-path.patch
+    ];
+
+    # see https://gitlab.winehq.org/wine/wine-staging
+    staging = fetchFromGitLab {
+      inherit version;
+      hash = "sha256-KBiESkLVEEWyUPzv1I7j8U9zjqfYdF+FL6wRCcIE290=";
+      domain = "gitlab.winehq.org";
+      owner = "wine";
+      repo = "wine-staging";
+      rev = "v${version}";
+
+      disabledPatchsets = [ ];
+    };
+
+    inherit (unstable) gecko32 gecko64 mono;
+  };
+
   yabridge = fetchurl rec {
     # NOTE: This is a pinned version with staging patches; don't forget to update them as well
     version = "9.21";
