@@ -1,6 +1,6 @@
 {
   lib,
-  fetchFromGitea,
+  fetchFromCodeberg,
   rustPlatform,
   versionCheckHook,
 }:
@@ -8,8 +8,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "pay-respects";
   version = "0.7.12";
 
-  src = fetchFromGitea {
-    domain = "codeberg.org";
+  src = fetchFromCodeberg {
     owner = "iff";
     repo = "pay-respects";
     tag = "v${finalAttrs.version}";
