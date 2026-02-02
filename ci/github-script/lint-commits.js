@@ -152,6 +152,16 @@ async function checkCommitMessages({ github, context, core, repoPath }) {
       failures.add(commit.sha)
     }
 
+    const fixups = ['amend!', 'fixup!', 'squash!']
+    if (fixups.some((s) => firstLine.startsWith(s))) {
+      core.error(
+        `${logMsgStart} was detected as not meeting our guidelines because ` +
+          `it begins with "${fixups.find((s) => firstLine.startsWith(s))}". ` +
+          'Did you forget to run `git rebase -i --autosquash`?',
+      )
+      failures.add(commit.sha)
+    }
+
     if (!failures.has(commit.sha)) {
       core.info(`${logMsgStart} passed our automated checks!`)
     }
