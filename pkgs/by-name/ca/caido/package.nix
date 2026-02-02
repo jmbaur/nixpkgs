@@ -16,7 +16,7 @@ let
     "cli"
     "desktop"
   ];
-  version = "0.53.1";
+  version = "0.55.1";
 
   system = stdenv.hostPlatform.system;
   isLinux = stdenv.isLinux;
