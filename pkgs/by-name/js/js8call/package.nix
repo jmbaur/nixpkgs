@@ -14,13 +14,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "js8call";
-  version = "2.3.1";
+  version = "2.5.2";
 
   src = fetchFromGitHub {
-    owner = "js8call";
-    repo = "js8call";
-    rev = "v${finalAttrs.version}";
-    sha256 = "sha256-rYXjcmQRRfizJVriZo9yX8x2yYfWpL94Cprx9eFC3ss=";
+    owner = "JS8Call-improved";
+    repo = "JS8Call-improved";
+    tag = "release/${finalAttrs.version}";
+    hash = "sha256-dpPh3+s29ksdVGc1I5JOJrqzS51Bda8afgU5RrO6B3w=";
   };
 
   nativeBuildInputs = [
@@ -40,11 +40,23 @@ stdenv.mkDerivation (finalAttrs: {
     boost
   ];
 
-  prePatch = ''
-    substituteInPlace CMakeLists.txt \
-        --replace "/usr/share/applications" "$out/share/applications" \
-        --replace "/usr/share/pixmaps" "$out/share/icons/hicolor/128x128/apps" \
-        --replace "/usr/bin/" "$out/bin"
+  # The "install" target is apparently no longer supported so we have
+  # to copy the built assets explicitly.
+  # https://github.com/JS8Call-improved/JS8Call-improved/issues/115
+  installPhase = ''
+    mkdir -p $out/bin $out/share/doc/js8call $out/share/icons/hicolor/128x128/apps $out/share/applications
+    cp JS8Call $out/bin/js8call
+    cp ../LICENSE ../README.md $out/share/doc/js8call
+    cp ../artwork/js8call_icon.png $out/share/icons/hicolor/128x128/apps
+    cp ../JS8Call.desktop $out/share/applications
+    runHook postInstall
+  '';
+
+  # We renamed the executable to lowercase for consistency with older
+  # versions and Linux more generally. Fix up the desktop file here:
+  postInstall = ''
+    substituteInPlace $out/share/applications/JS8Call.desktop \
+      --replace-fail "Exec=JS8Call" "Exec=js8call"
   '';
 
   meta = {
@@ -52,12 +64,19 @@ stdenv.mkDerivation (finalAttrs: {
     longDescription = ''
       JS8Call is software using the JS8 Digital Mode providing weak signal
       keyboard to keyboard messaging to Amateur Radio Operators.
+
+      JS8Call-Improved is a community-driven evolution of JS8Call,
+      bringing modern features, active development, and long-term
+      support to HF digital communication. It’s fully compatible with
+      existing JS8Call versions while adding new capabilities and
+      refinements.
     '';
-    homepage = "http://js8call.com/";
+    homepage = "https://js8call-improved.com/";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [
       sarcasticadmin
+      pdg137
     ];
   };
 })
