@@ -363,6 +363,8 @@ let
           # Exposed for tarsum build on non-linux systems (build-support/docker/default.nix)
           inherit moby-src;
           tests = lib.optionalAttrs (!clientOnly) { inherit (nixosTests) docker; };
+          # run with: nix-shell ./maintainers/scripts/update.nix --argstr package docker
+          updateScript = ./update.sh;
         };
 
         meta = docker-meta // {
