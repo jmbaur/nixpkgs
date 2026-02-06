@@ -73,7 +73,7 @@ stdenv.mkDerivation (finalAttrs: {
   # See: https://github.com/ente-io/ente/blob/main/web/apps/photos/.env
   env = extraBuildEnv;
 
-  postPatch = [
+  postPatch =
     # Use our `wasm-pack` binary, rather than the Node version, which is
     # just a wrapper that tries to download the actual binary
     ''
@@ -82,7 +82,7 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail "wasm-pack " ${lib.escapeShellArg "${wasm-pack}/bin/wasm-pack "}
     ''
     # Replace hardcoded ente.io urls if desired
-    (lib.optionalString (enteMainUrl != null) ''
+    + lib.optionalString (enteMainUrl != null) ''
       substituteInPlace \
         apps/payments/src/services/billing.ts \
         apps/photos/src/pages/shared-albums.tsx \
@@ -91,8 +91,7 @@ stdenv.mkDerivation (finalAttrs: {
       substituteInPlace \
         apps/accounts/src/pages/index.tsx \
         --replace-fail "https://web.ente.io" ${lib.escapeShellArg enteMainUrl}
-    '')
-  ];
+    '';
 
   yarnBuildScript = "build:${enteApp}";
   installPhase =
