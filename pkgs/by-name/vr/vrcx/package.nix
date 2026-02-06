@@ -1,15 +1,15 @@
 {
   lib,
-  fetchFromGitHub,
-  buildDotnetModule,
-  dotnetCorePackages,
-  buildNpmPackage,
+  stdenv,
   nodejs_22,
   electron_39,
   makeWrapper,
-  copyDesktopItems,
+  fetchFromGitHub,
+  buildNpmPackage,
   makeDesktopItem,
-  stdenv,
+  copyDesktopItems,
+  buildDotnetModule,
+  dotnetCorePackages,
 }:
 let
   node = nodejs_22;
@@ -78,11 +78,11 @@ buildNpmPackage (finalAttrs: {
   desktopItems = [
     (makeDesktopItem {
       name = "vrcx";
-      desktopName = "VRCX";
-      comment = "Friendship management tool for VRChat";
       icon = "vrcx";
       exec = "vrcx";
       terminal = false;
+      desktopName = "VRCX";
+      comment = "Friendship management tool for VRChat";
       categories = [
         "Utility"
         "Application"
@@ -93,8 +93,8 @@ buildNpmPackage (finalAttrs: {
 
   passthru = {
     backend = buildDotnetModule {
-      pname = "${finalAttrs.pname}-backend";
       inherit (finalAttrs) version src;
+      pname = "${finalAttrs.pname}-backend";
 
       dotnet-sdk = dotnet.sdk;
       dotnet-runtime = dotnet.runtime;
