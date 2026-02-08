@@ -5,7 +5,6 @@
   poetry-core,
   base58,
   cryptography,
-  ecdsa,
 }:
 
 buildPythonPackage rec {
