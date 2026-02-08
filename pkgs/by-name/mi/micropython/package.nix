@@ -46,6 +46,13 @@ stdenv.mkDerivation rec {
     })
     ./fix-cross-compilation.patch
     ./fix-mpy-cross-path.patch
+    # fix CVE-2026-1998
+    # https://github.com/micropython/micropython/issues/18639
+    # https://github.com/micropython/micropython/pull/18671
+    (fetchpatch {
+      url = "https://github.com/dpgeorge/micropython/commit/570744d06c5ba9dba59b4c3f432ca4f0abd396b6.patch";
+      hash = "sha256-j8xr4oqmrsYumJvyA71bx+/dg2HiUxSxdjKUR/2sclI=";
+    })
   ];
 
   postPatch = ''
