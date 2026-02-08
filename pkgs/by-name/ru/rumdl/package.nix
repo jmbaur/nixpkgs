@@ -37,6 +37,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   useNextest = true;
 
   cargoTestFlags = [
+    "--bins"
+
+    # Building all tests takes too long, and filtering by profile does not solve it.
+    # It also causes flaky results on Darwin in Hydra.
+    "--test"
+    "cli_*"
+
     # Prefer the "smoke" profile over "ci" to exclude flaky tests: https://github.com/rvben/rumdl/pull/341
     "--profile smoke"
   ];
