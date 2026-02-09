@@ -26,7 +26,7 @@
   xorg,
   glib,
   libGL,
-  glfw,
+  glfw3-minecraft,
   openal,
   libglvnd,
   alsa-lib,
@@ -131,7 +131,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   runtimeDeps = [
     libGL
-    glfw
+    glfw3-minecraft
     glib
     openal
     libglvnd
@@ -182,6 +182,7 @@ stdenv.mkDerivation (finalAttrs: {
         lib.makeBinPath (minecraftJdks ++ lib.optional stdenv.hostPlatform.isLinux xorg.xrandr)
       }" \
       --run 'cd $HOME' \
+      --prefix JAVA_TOOL_OPTIONS " " "-Dorg.lwjgl.glfw.libname=${lib.getLib glfw3-minecraft}/lib/libglfw.so" \
       ''${gappsWrapperArgs[@]}
   '';
 
