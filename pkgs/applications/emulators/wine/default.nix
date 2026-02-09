@@ -56,6 +56,10 @@ let
       src = sources.stable;
       useStaging = false;
     };
+    stable_11 = {
+      src = sources.stable_11;
+      useStaging = false;
+    };
     unstable = {
       src = sources.unstable;
       useStaging = false;
@@ -64,6 +68,11 @@ let
     # the version we want to use is "unstable".
     staging = {
       src = sources.unstable;
+      pnameSuffix = "-staging";
+      useStaging = true;
+    };
+    staging_11 = {
+      src = sources.unstable_11;
       pnameSuffix = "-staging";
       useStaging = true;
     };
