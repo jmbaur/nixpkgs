@@ -48,6 +48,7 @@ rustPlatform.buildRustPackage rec {
       ekleog
       matthiasbeyer
       chrjabs
+      figsoda
     ];
   };
 }
