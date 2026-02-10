@@ -9,13 +9,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "microcode-intel";
-  version = "20251111";
+  version = "20260210";
 
   src = fetchFromGitHub {
     owner = "intel";
     repo = "Intel-Linux-Processor-Microcode-Data-Files";
-    rev = "microcode-${finalAttrs.version}";
-    hash = "sha256-Gn3VKagfMtYbtkh70TlDmy0OBUUbsRiRxHkJtTGEVrY=";
+    tag = "microcode-${finalAttrs.version}";
+    hash = "sha256-c5DAcaXO8FuZtbzrNwjS5E8JEKHb4rFo0CVm1xfDtcY=";
   };
 
   nativeBuildInputs = [ libarchive ];
