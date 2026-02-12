@@ -473,7 +473,7 @@ in
       )
     ]
     ++ lib.optionals stdenv.hostPlatform.isMinGW [
-      ./3.5/fix-mingw-linking.patch
+      ./3.6/mingw-define-netreset.patch
     ];
 
     withDocs = true;
