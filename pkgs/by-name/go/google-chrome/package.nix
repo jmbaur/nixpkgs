@@ -324,9 +324,6 @@ let
     changelog = "https://chromereleases.googleblog.com/";
     description = "Freeware web browser developed by Google";
     homepage = "https://www.google.com/chrome/browser/";
-    knownVulnerabilities = lib.optionals stdenvNoCC.hostPlatform.isDarwin [
-      "Out of date, because the updater (pkgs/by-name/go/google-chrome/update.sh) has stopped working, and there does not seem to be another way to get stable URLs to particular Chrome versions."
-    ];
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [
       iedame
