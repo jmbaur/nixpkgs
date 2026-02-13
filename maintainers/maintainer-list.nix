@@ -10072,6 +10072,13 @@
     github = "HadziqM";
     githubId = 50319538;
   };
+  haennetz = {
+    name = "Hännetz";
+    email = "me@haennetz.net";
+    matrix = "@me:haennetz.net";
+    github = "Haennetz";
+    githubId = 34142036;
+  };
   hagl = {
     email = "harald@glie.be";
     github = "hagl";
@@ -16857,12 +16864,6 @@
     githubId = 6412377;
     name = "Samuel Ruprecht";
   };
-  melling = {
-    email = "mattmelling@fastmail.com";
-    github = "mattmelling";
-    githubId = 1215331;
-    name = "Matt Melling";
-  };
   melon = {
     email = "melontime05@gmail.com";
     github = "BlaiZephyr";
@@ -20292,6 +20293,11 @@
     github = "pcboy";
     githubId = 943430;
     name = "David Hagege";
+  };
+  pdg137 = {
+    name = "Paul Grayson";
+    github = "pdg137";
+    githubId = 466760;
   };
   peat-psuwit = {
     name = "Ratchanan Srirattanamet";
