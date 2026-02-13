@@ -15,6 +15,7 @@ lto = true
 anyhow = "1.0.82"
 dbus = "0.9.7"
 glob = "0.3.1"
+libsystemd = "0.7.2"
 log = "0.4.21"
 nix = { version = "0.31.1", features = ["fs", "signal"] }
 regex = "1.12.3"
