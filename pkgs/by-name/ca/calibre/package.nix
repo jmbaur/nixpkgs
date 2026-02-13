@@ -61,6 +61,15 @@ stdenv.mkDerivation (finalAttrs: {
         url = "https://github.com/debian-calibre/calibre/raw/refs/tags/debian/${finalAttrs.version}+${debian-source}/debian/patches/hardening/0007-Hardening-Qt-code.patch";
         hash = "sha256-lKp/omNicSBiQUIK+6OOc8ysM6LImn5GxWhpXr4iX+U=";
       })
+      # Fix CVE-2026-25635
+      # http://tracker.security.nixos.org/issues/NIXPKGS-2026-0156
+      # https://github.com/NixOS/nixpkgs/issues/488046
+      # Fixed upstream in 9.2.0.
+      (fetchpatch {
+        name = "CVE-2026-25635.patch";
+        url = "https://github.com/kovidgoyal/calibre/commit/9739232fcb029ac15dfe52ccd4fdb4a07ebb6ce9.patch";
+        hash = "sha256-fzotxhfMF/DCMvpIfMSOGY8iVOybsYymRQvhXf7jQyc=";
+      })
       # Fix CVE-2026-25636
       # http://tracker.security.nixos.org/issues/NIXPKGS-2026-0160
       # https://github.com/NixOS/nixpkgs/issues/488052
