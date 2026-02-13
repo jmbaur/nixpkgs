@@ -86,6 +86,14 @@ stdenv.mkDerivation (finalAttrs: {
         url = "https://github.com/kovidgoyal/calibre/commit/9484ea82c6ab226c18e6ca5aa000fa16de598726.patch";
         hash = "sha256-hpWFSQXyOAVRqou0v+5oT5zIrBbyP2Uv2z1Vg811ZG0=";
       })
+      # Fix CVE-2026-25731
+      # http://tracker.security.nixos.org/issues/NIXPKGS-2026-0155
+      # https://github.com/NixOS/nixpkgs/issues/488045
+      # Fixed upstream in 9.2.0.
+      #
+      # Manually ported to the current release version from the patch:
+      # https://github.com/kovidgoyal/calibre/commit/f0649b27512e987b95fcab2e1e0a3bcdafc23379.patch
+      ./CVE-2026-25731.patch
     ]
     ++ lib.optional (!unrarSupport) ./dont_build_unrar_plugin.patch;
 
