@@ -168,7 +168,8 @@ in
 pkgs
 // rec {
   # use binary SDK here to avoid downgrading feature band
-  sdk_8_0_1xx = combineSdk pkgs.dotnet_8.sdk pkgs.sdk_8_0_1xx-bin;
+  # combining sdk_8 results in a broken ilcompiler
+  sdk_8_0_1xx = if !pkgs.dotnet_8.vmr.meta.broken then pkgs.dotnet_8.sdk else pkgs.sdk_8_0_1xx-bin;
   sdk_9_0_1xx = combineSdk pkgs.dotnet_9.sdk pkgs.sdk_9_0_1xx-bin;
   sdk_10_0_1xx = combineSdk pkgs.dotnet_10.sdk pkgs.sdk_10_0_1xx-bin;
   # source-built SDK only exists for _1xx feature band
