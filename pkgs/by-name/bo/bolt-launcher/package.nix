@@ -1,7 +1,7 @@
 {
   lib,
   stdenv,
-  fetchFromGitea,
+  fetchFromCodeberg,
   makeWrapper,
   cmake,
   ninja,
@@ -39,8 +39,7 @@ let
     pname = "bolt-launcher";
     version = "0.21.0";
 
-    src = fetchFromGitea {
-      domain = "codeberg.org";
+    src = fetchFromCodeberg {
       owner = "AdamCake";
       repo = "Bolt";
       tag = finalAttrs.version;
