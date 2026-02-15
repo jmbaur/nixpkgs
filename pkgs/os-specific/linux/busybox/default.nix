@@ -109,6 +109,12 @@ stdenv.mkDerivation rec {
       url = "https://git.alpinelinux.org/aports/plain/main/busybox/0001-tar-fix-TOCTOU-symlink-race-condition.patch?id=9e42dea5fba84a8afad1f1910b7d3884128a567e";
       hash = "sha256-GmXQhwB1/IPVjXXpGi5RjRvuGJgIMIb7lQKB63m306g=";
     })
+    # archival: disallow path traversals (CVE-2023-39810)
+    (fetchpatch {
+      name = "CVE-2023-39810.patch";
+      url = "https://git.busybox.net/busybox/patch/?id=9a8796436b9b0641e13480811902ea2ac57881d3";
+      hash = "sha256-pOARbCwiucrkNITBoOMpLF3GniYvJiyBeBi2/Aw2JY8=";
+    })
   ]
   ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) ./clang-cross.patch;
 
