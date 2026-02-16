@@ -19,6 +19,10 @@
   swig,
   # Optionally exclude Luksan solvers to allow licensing under MIT
   withoutLuksanSolvers ? false,
+
+  # Builds docs on-demand
+  withDocs ? false,
+
   # Build static on-demand
   withStatic ? stdenv.hostPlatform.isStatic,
 
@@ -46,10 +50,7 @@ clangStdenv.mkDerivation (finalAttrs: {
     hash = "sha256-i+Cd2VLMbI4PUSXennR8jgF+/ZkzKX9WkVTPtayr8vs=";
   };
 
-  outputs = [
-    "out"
-    "doc"
-  ];
+  outputs = [ "out" ] ++ lib.optional withDocs "doc";
 
   postPatch = ''
     substituteInPlace nlopt.pc.in \
@@ -93,7 +94,7 @@ clangStdenv.mkDerivation (finalAttrs: {
     lib.cmakeFeature "Python_EXECUTABLE" "${buildPythonBindingsEnv.interpreter}"
   );
 
-  postBuild = ''
+  postBuild = lib.optionalString withDocs ''
     ${buildDocsEnv.interpreter} -m mkdocs build \
       --config-file ../mkdocs.yml \
       --site-dir $doc \
