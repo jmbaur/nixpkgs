@@ -72,6 +72,7 @@ stdenv.mkDerivation (finalAttrs: {
     maintainers = with lib.maintainers; [
       felixsinger
       funkeleinhorn
+      jmbaur
     ];
     platforms = lib.platforms.all;
     mainProgram = "flashprog";
