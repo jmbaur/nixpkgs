@@ -41,7 +41,7 @@ stdenv.mkDerivation {
 
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
-    maintainers = [ ];
+    maintainers = [ lib.maintainers.jmbaur ];
     mainProgram = "dtach";
   };
 }
