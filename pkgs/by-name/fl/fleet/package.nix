@@ -59,6 +59,7 @@ buildGoModule (finalAttrs: {
   subPackages = [
     "cmd/fleet"
     "orbit/cmd/orbit"
+    "orbit/cmd/desktop"
   ];
 
   ldflags = [
