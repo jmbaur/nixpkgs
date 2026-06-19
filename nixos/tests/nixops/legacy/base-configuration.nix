@@ -20,7 +20,7 @@ in
 {
   imports = [
     (modulesPath + "/virtualisation/qemu-vm.nix")
-    (modulesPath + "/testing/test-instrumentation.nix")
+    (modulesPath + "/../lib/testing/nixos-test-base.nix")
   ];
   virtualisation.writableStore = true;
   nix.settings.substituters = lib.mkForce [ ];

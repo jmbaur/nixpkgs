@@ -11,7 +11,7 @@ in
 evalConfig {
   modules = [
     ./configuration.nix
-    (import "${nixpkgs}/nixos/modules/testing/test-instrumentation.nix")
+    (import "${nixpkgs}/nixos/lib/testing/nixos-test-base.nix")
     {
       # Disable nix channels
       nix.channel.enable = false;

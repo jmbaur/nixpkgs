@@ -67,7 +67,7 @@ let
       system = null;
       modules = [
         ../modules/installer/cd-dvd/installation-cd-minimal.nix
-        ../modules/testing/test-instrumentation.nix
+        ../lib/testing/nixos-test-base.nix
         { nixpkgs.pkgs = pkgs; }
       ];
     }).config.system.build.isoImage;
@@ -77,7 +77,7 @@ let
       system = null;
       modules = [
         ../modules/installer/sd-card/sd-image-x86_64.nix
-        ../modules/testing/test-instrumentation.nix
+        ../lib/testing/nixos-test-base.nix
         {
           sdImage.compressImage = false;
           nixpkgs.pkgs = pkgs;
@@ -115,7 +115,7 @@ let
           system = null;
           modules = [
             ../modules/installer/netboot/netboot.nix
-            ../modules/testing/test-instrumentation.nix
+            ../lib/testing/nixos-test-base.nix
             {
               boot.kernelParams = [
                 "serial"

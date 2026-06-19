@@ -46,7 +46,7 @@
             { lib, pkgs, ... }: {
               imports = [
                 ./hardware-configuration.nix
-                <nixpkgs/nixos/modules/testing/test-instrumentation.nix>
+                <nixpkgs/nixos/lib/testing/nixos-test-base.nix>
               ];
 
               boot.loader.grub = {

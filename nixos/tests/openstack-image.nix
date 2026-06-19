@@ -15,7 +15,7 @@ let
       system = null;
       modules = [
         ../maintainers/scripts/openstack/openstack-image.nix
-        ../modules/testing/test-instrumentation.nix
+        ../lib/testing/nixos-test-base.nix
         ../modules/profiles/qemu-guest.nix
         {
           # Needed by nixos-rebuild due to lack of network access.
@@ -88,7 +88,7 @@ in
       {
         imports = [
           <nixpkgs/nixos/modules/virtualisation/openstack-config.nix>
-          <nixpkgs/nixos/modules/testing/test-instrumentation.nix>
+          <nixpkgs/nixos/lib/testing/nixos-test-base.nix>
           <nixpkgs/nixos/modules/profiles/qemu-guest.nix>
         ];
         environment.etc.testFile = {

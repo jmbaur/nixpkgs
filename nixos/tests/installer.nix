@@ -32,7 +32,7 @@ let
               if !withTestInstrumentation then
                 "" # Still included, but via installer/flake.nix
               else
-                "<nixpkgs/nixos/modules/testing/test-instrumentation.nix>"
+                "<nixpkgs/nixos/lib/testing/nixos-test-base.nix>"
             }
           ];
 

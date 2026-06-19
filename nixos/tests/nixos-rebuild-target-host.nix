@@ -116,7 +116,7 @@
             { lib, modulesPath, ... }: {
               imports = [
                 (modulesPath + "/virtualisation/qemu-vm.nix")
-                (modulesPath + "/testing/test-instrumentation.nix")
+                (modulesPath + "/../lib/testing/nixos-test-base.nix")
                 (modulesPath + "/../tests/common/user-account.nix")
                 (lib.modules.importJSON ./target-configuration.json)
                 (lib.modules.importJSON ./target-network.json)

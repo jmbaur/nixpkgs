@@ -15,7 +15,7 @@ let
       system = null;
       modules = [
         ../maintainers/scripts/ec2/amazon-image.nix
-        ../modules/testing/test-instrumentation.nix
+        ../lib/testing/nixos-test-base.nix
         ../modules/profiles/qemu-guest.nix
         {
           # Hack to make the partition resizing work in QEMU.
@@ -134,7 +134,7 @@ in
       {
         imports = [
           <nixpkgs/nixos/modules/virtualisation/amazon-image.nix>
-          <nixpkgs/nixos/modules/testing/test-instrumentation.nix>
+          <nixpkgs/nixos/lib/testing/nixos-test-base.nix>
           <nixpkgs/nixos/modules/profiles/qemu-guest.nix>
         ];
         environment.etc.testFile = {

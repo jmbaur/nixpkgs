@@ -11,7 +11,7 @@
       nixosConfigurations.xyz = nixpkgs.lib.nixosSystem {
         modules = [
           ./configuration.nix
-          (nixpkgs + "/nixos/modules/testing/test-instrumentation.nix")
+          (nixpkgs + "/nixos/lib/testing/nixos-test-base.nix")
           {
             # We don't need nix-channel anymore
             nix.channel.enable = false;

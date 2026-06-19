@@ -17,7 +17,7 @@ let
     {
       imports = [
         (modulesPath + "/profiles/minimal.nix")
-        (modulesPath + "/testing/test-instrumentation.nix")
+        (modulesPath + "/../lib/testing/nixos-test-base.nix")
       ];
 
       hardware.enableAllFirmware = lib.mkForce false;

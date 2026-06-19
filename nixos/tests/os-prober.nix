@@ -61,7 +61,7 @@ import ./make-test-python.nix (
       {config, pkgs, lib, ...}: ({
       imports =
             [ ./hardware-configuration.nix
-              <nixpkgs/nixos/modules/testing/test-instrumentation.nix>
+              <nixpkgs/nixos/lib/testing/nixos-test-base.nix>
             ];
       } // lib.importJSON ${pkgs.writeText "simpleConfig.json" (builtins.toJSON simpleConfig)})
     '';

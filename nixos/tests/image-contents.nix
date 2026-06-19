@@ -16,7 +16,7 @@ let
     (import ../lib/eval-config.nix {
       system = null;
       modules = [
-        ../modules/testing/test-instrumentation.nix
+        ../lib/testing/nixos-test-base.nix
         ../modules/profiles/qemu-guest.nix
         {
           fileSystems."/" = {
