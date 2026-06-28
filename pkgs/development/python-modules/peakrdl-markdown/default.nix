@@ -3,12 +3,12 @@
   fetchFromGitHub,
   gitUpdater,
   lib,
-  peakrdl,
-  py-markdown-table,
   poetry-core,
+  py-markdown-table,
+  systemrdl-compiler,
 }:
 
-buildPythonPackage rec {
+buildPythonPackage (finalAttrs: {
   pname = "peakrdl-markdown";
   version = "1.0.3";
 
@@ -17,14 +17,14 @@ buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "SystemRDL";
     repo = "PeakRDL-markdown";
-    tag = "v${version}";
+    tag = "v${finalAttrs.version}";
     hash = "sha256-Dt8FxnvvXY9nVhFehIcfSC9mFbbEzEuaVnBMu032dug=";
   };
 
   build-system = [ poetry-core ];
 
   dependencies = [
-    peakrdl
+    systemrdl-compiler
     py-markdown-table
   ];
 
@@ -36,4 +36,4 @@ buildPythonPackage rec {
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.jmbaur ];
   };
-}
+})
