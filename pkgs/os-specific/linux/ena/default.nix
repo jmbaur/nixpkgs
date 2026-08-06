@@ -44,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     dest=$out/lib/modules/${kernel.modDirVersion}/misc
     mkdir -p $dest
     cp ena.ko $dest/
-    xz $dest/ena.ko
+    xz --check=crc32 --lzma2=dict=1MiB $dest/ena.ko
     runHook postInstall
   '';
 
