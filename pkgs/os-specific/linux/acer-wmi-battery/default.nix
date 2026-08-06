@@ -22,6 +22,7 @@ stdenv.mkDerivation {
   };
 
   makeFlags = kernelModuleMakeFlags;
+  nativeBuildInputs = kernel.moduleBuildDependencies;
 
   postPatch = ''
     substituteInPlace Makefile \
@@ -33,7 +34,7 @@ stdenv.mkDerivation {
   installPhase = ''
     runHook preInstall
 
-    find . -name '*.ko' -exec xz -f {} \;
+    find . -name '*.ko' -exec xz --check=crc32 --lzma2=dict=1MiB -f {} \;
     install -Dm444 -t $out/lib/modules/${kernel.modDirVersion}/kernel/drivers/platform/x86 *.ko.xz
 
     runHook postInstall
