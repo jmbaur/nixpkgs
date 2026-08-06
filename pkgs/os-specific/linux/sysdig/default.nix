@@ -67,7 +67,8 @@ stdenv.mkDerivation {
     perl
     installShellFiles
     pkg-config
-  ];
+  ]
+  ++ lib.optionals (kernel != null) kernel.moduleBuildDependencies;
   buildInputs = [
     luajit
     ncurses
@@ -90,8 +91,7 @@ stdenv.mkDerivation {
     libbpf
     clang
     gcc
-  ]
-  ++ lib.optionals (kernel != null) kernel.moduleBuildDependencies;
+  ];
 
   hardeningDisable = [
     "pic"
@@ -172,7 +172,7 @@ stdenv.mkDerivation {
             if test -f "$i"; then
               xz -d $i
               sed -i "s#$kernel_dev#................................#g" ''${i%.xz}
-              xz -9 ''${i%.xz}
+              xz -9 --check=crc32 --lzma2=dict=1MiB ''${i%.xz}
             fi
           done
       fi
