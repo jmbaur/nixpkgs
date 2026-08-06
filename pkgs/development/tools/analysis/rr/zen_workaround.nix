@@ -44,7 +44,7 @@ stdenv.mkDerivation {
       runHook preInstall
       mkdir -p "${modDestDir}"
       cp *.ko "${modDestDir}/"
-      find ${modDestDir} -name '*.ko' -exec xz -f '{}' \;
+      find ${modDestDir} -name '*.ko' -exec xz --check=crc32 --lzma2=dict=1MiB -f '{}' \;
       runHook postInstall
     '';
 
