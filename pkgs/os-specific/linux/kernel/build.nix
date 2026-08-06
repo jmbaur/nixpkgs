@@ -23,6 +23,9 @@
   rustc-unwrapped,
   rust-bindgen-unwrapped,
   rustPlatform,
+  makeSetupHook,
+  gzip,
+  xz,
 }:
 
 let
@@ -158,6 +161,15 @@ lib.makeOverridable (
       elfutils
       # module makefiles often run uname commands to find out the kernel version
       (buildPackages.deterministic-uname.override { inherit modDirVersion; })
+      (makeSetupHook {
+        name = "check-module-compression";
+        substitutions = { inherit configfile modDirVersion; };
+        propagatedNativeBuildInputs = [
+          gzip
+          xz
+          zstd
+        ];
+      } ./check-module-compression.sh)
     ]
     ++ optional (lib.versionAtLeast version "5.13") zstd
     ++ optionals withRust [
