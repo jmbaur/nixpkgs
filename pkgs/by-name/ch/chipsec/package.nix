@@ -59,7 +59,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   # Allow the kernel module to be loaded manually
   + lib.optionalString withDriver ''
     pushd $out/${python3.pkgs.python.sitePackages}/chipsec/helper/linux/
-      xz -k chipsec.ko
+      xz --check=crc32 --lzma2=dict=1MiB -k chipsec.ko
       install -Dm444 chipsec.ko.xz $out/lib/modules/${kernel.modDirVersion}/chipsec.ko.xz
       rm chipsec.ko.xz
     popd
