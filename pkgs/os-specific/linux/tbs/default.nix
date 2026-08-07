@@ -72,7 +72,7 @@ stdenv.mkDerivation {
   ++ kernel.moduleBuildDependencies;
 
   postInstall = ''
-    find $out/lib/modules/${kernel.modDirVersion} -name "*.ko" -exec xz {} \;
+    find $out/lib/modules/${kernel.modDirVersion} -name "*.ko" -exec xz --check=crc32 --lzma2=dict=1MiB {} \;
   '';
 
   meta = {
