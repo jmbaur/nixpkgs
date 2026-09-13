@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jared Baur <jaredbaur@fastmail.com>
+Date: Sun, 13 Sep 2026 01:36:15 -0700
+Subject: [PATCH] importer: do not fail imports when the bytecode cache is
+ unwritable
+
+Caching compiled bytecode is an optimization, but `set_data` lets any
+failure to write it propagate, so importing a namespace from a location the
+process cannot write to raises instead of simply running uncached. That makes
+Basilisp unusable from any read-only install prefix -- a Nix store path, a
+container image layer, a system site-packages directory a non-root user
+imports from -- even though nothing about the import itself needs to write.
+
+CPython's own `SourceLoader.set_data` treats this as best-effort and says so:
+
+    # Could be a permission error, read-only filesystem: just forget
+    # about writing the data.
+
+Do the same, and log the reason at debug level.
+---
+ src/basilisp/importer.py | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/src/basilisp/importer.py b/src/basilisp/importer.py
+index 313fbdb..14667aa 100644
+--- a/src/basilisp/importer.py
++++ b/src/basilisp/importer.py
+@@ -219,9 +219,15 @@ class BasilispImporter(  # type: ignore[misc]  # pylint: disable=abstract-method
+             return f.read()
+ 
+     def set_data(self, path: str, data: bytes) -> None:
+-        os.makedirs(os.path.dirname(path), exist_ok=True)
+-        with open(path, mode="w+b") as f:
+-            f.write(data)
++        try:
++            os.makedirs(os.path.dirname(path), exist_ok=True)
++            with open(path, mode="w+b") as f:
++                f.write(data)
++        except OSError as e:
++            # Could be a permission error, a read-only filesystem, a full disk:
++            # just forget about caching the bytecode, the same way CPython's
++            # SourceLoader.set_data does.
++            logger.debug(f"Could not write bytecode cache to '{path}': {e}")
+ 
+     def get_filename(self, fullname: str) -> str:
+         try:
