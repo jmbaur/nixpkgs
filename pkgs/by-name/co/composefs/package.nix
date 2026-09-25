@@ -17,7 +17,6 @@
   fsverity-utils,
   nix-update-script,
   testers,
-  nixosTests,
 
   fuseSupport ? lib.meta.availableOn stdenv.hostPlatform fuse3,
   enableValgrindCheck ? false,
@@ -97,8 +96,6 @@ stdenv.mkDerivation (finalAttrs: {
   passthru = {
     updateScript = nix-update-script { };
     tests = {
-      # Broken on aarch64 unrelated to this package: https://github.com/NixOS/nixpkgs/issues/291398
-      inherit (nixosTests) activation-etc-overlay-immutable activation-etc-overlay-mutable;
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     };
   };

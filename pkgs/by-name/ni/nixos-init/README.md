@@ -49,12 +49,12 @@ closure. Currently nixos-init comes in at ~500 KiB.
 
 - `initrd-init`: Initializes the system on boot, setting up the tree for
   systemd to start.
-- `find-etc`: Finds the `/etc` paths in `/sysroot` so that the initrd doesn't
-  directly depend on the toplevel, reducing the need to rebuild the initrd on
-  every generation.
-- `clear-etc-opaque`: Clears stale `trusted.overlay.opaque` xattrs from the
-  mutable `/etc` overlay's upperdir before it is mounted, so that lowerdir
-  entries added by a new generation are not hidden.
+- `etc-confext-sysroot`: Prepares `/sysroot` for systemd's
+  `systemd-confext-sysroot.service` to merge `/etc`, built as a systemd-confext
+  image, for the generation that was booted. It finds the image in the bootspec
+  of the toplevel, so that the initrd doesn't depend on it.
+- `etc-confext-activate`: Migrates the merged `/etc` of the running system to
+  the image of a new generation when it is activated.
 - `resolve-in-root`: Figures out the canonical path inside a chroot.
 
 ## Future

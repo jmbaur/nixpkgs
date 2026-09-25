@@ -8,10 +8,8 @@ let
     services.userborn.enable = true;
     boot.initrd.systemd.enable = true;
     networking.useNetworkd = true;
-    system.etc.overlay = {
-      enable = true;
-      mutable = false;
-    };
+    system.etc.confext.enable = true;
+    systemd.confext.settings.ConfExt.Mutable = "no";
   };
   users = {
     # Auto allocation at runtime, must work on an immutable /etc.

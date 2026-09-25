@@ -2009,6 +2009,7 @@
   ./system/boot/stage-2.nix
   ./system/boot/stratisroot.nix
   ./system/boot/systemd.nix
+  ./system/boot/systemd/confext.nix
   ./system/boot/systemd/coredump.nix
   ./system/boot/systemd/dm-verity.nix
   ./system/boot/systemd/fido2.nix

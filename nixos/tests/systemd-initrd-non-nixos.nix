@@ -42,7 +42,7 @@ in
     nixosInit = {
       imports = [ common ];
       system.nixos-init.enable = true;
-      system.etc.overlay.enable = true;
+      system.etc.confext.enable = true;
       services.userborn.enable = true;
     };
   };

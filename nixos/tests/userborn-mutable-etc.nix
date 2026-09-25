@@ -6,10 +6,7 @@ let
   common = {
     services.userborn.enable = true;
     boot.initrd.systemd.enable = true;
-    system.etc.overlay = {
-      enable = true;
-      mutable = true;
-    };
+    system.etc.confext.enable = true;
   };
 in
 

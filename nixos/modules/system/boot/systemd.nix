@@ -847,23 +847,23 @@ in
     # change the values. All other parts of systemd should read them from their
     # canonical locations.
     #
-    # If you use the overlay mechanism to manage /etc, this is unnecessary
-    # because either the overlay is mutable (and users can legitimately change
-    # values without them being overridden) or it is immutable and systemd will
-    # suggest to only make runtime changes.
+    # If /etc is a configuration extension image (system.etc.confext), this is
+    # unnecessary because either /etc is mutable (and users can legitimately
+    # change values without them being overridden) or it is immutable and
+    # systemd will suggest to only make runtime changes.
     systemd.services."systemd-localed".environment =
-      lib.mkIf (!config.system.etc.overlay.enable && !config.i18n.imperativeLocale)
+      lib.mkIf (!config.system.etc.confext.enable && !config.i18n.imperativeLocale)
         {
           SYSTEMD_ETC_LOCALE_CONF = "/etc/static/locale.conf";
           SYSTEMD_ETC_VCONSOLE_CONF = "/etc/static/vconsole.conf";
         };
     systemd.services."systemd-timedated".environment =
-      lib.mkIf (!config.system.etc.overlay.enable && config.time.timeZone != null)
+      lib.mkIf (!config.system.etc.confext.enable && config.time.timeZone != null)
         {
           SYSTEMD_ETC_LOCALTIME = "/etc/static/localtime";
           SYSTEMD_ETC_ADJTIME = "/etc/static/adjtime";
         };
-    systemd.services."systemd-hostnamed".environment = lib.mkIf (!config.system.etc.overlay.enable) {
+    systemd.services."systemd-hostnamed".environment = lib.mkIf (!config.system.etc.confext.enable) {
       SYSTEMD_ETC_HOSTNAME = "/etc/static/hostname";
       SYSTEMD_ETC_MACHINE_INFO = "/etc/static/machine-info";
     };

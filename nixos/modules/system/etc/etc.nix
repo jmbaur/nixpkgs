@@ -67,24 +67,6 @@ let
         ) etc'}
       '';
 
-  etcHardlinks = lib.filter (f: f.mode != "symlink" && f.mode != "direct-symlink") etc';
-
-  # Regular files at or below this size are inlined into the erofs metadata
-  # image (see build-composefs-dump.py) and therefore do not need to be
-  # shipped in the basedir data-only lower layer. Keep this in sync with
-  # INLINE_CONTENT_MAX in build-composefs-dump.py.
-  etcInlineContentMax = 4096;
-
-  # Entries whose content we can prove at eval time will be served directly
-  # from the metadata image (inlined, or empty). Excluding them here keeps
-  # their source paths out of the basedir build script, so changing a small
-  # text-backed /etc file does not rebuild etc-lowerdir. Entries backed by
-  # `source` (size unknown at eval time) are kept and filtered at build time
-  # below.
-  isInlinedAtEvalTime = f: f.text != null && lib.stringLength f.text <= etcInlineContentMax;
-
-  etcBasedirEntries = lib.filter (f: !isInlinedAtEvalTime f) etcHardlinks;
-
 in
 
 {
@@ -94,30 +76,6 @@ in
   ###### interface
 
   options = {
-
-    system.etc.overlay = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Mount `/etc` as an overlayfs instead of generating it via a perl script.
-
-          Note: This is currently experimental. Only enable this option if you're
-          confident that you can recover your system if it breaks.
-        '';
-      };
-
-      mutable = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Whether to mount `/etc` mutably (i.e. read-write) or immutably (i.e. read-only).
-
-          If this is false, only the immutable lowerdir is mounted. If it is
-          true, a writable upperdir is mounted on top.
-        '';
-      };
-    };
 
     environment.etc = lib.mkOption {
       default = { };
@@ -259,180 +217,12 @@ in
   config = {
 
     system.build.etc = etc;
-    system.build.etcActivationCommands =
-      let
-        etcOverlayOptions = lib.concatStringsSep "," (
-          [
-            "relatime"
-            "redirect_dir=on"
-            "metacopy=on"
-          ]
-          ++ lib.optionals config.system.etc.overlay.mutable [
-            "upperdir=/.rw-etc/upper"
-            "workdir=/.rw-etc/work"
-          ]
-        );
-      in
-      if config.system.etc.overlay.enable then
-        #bash
-        ''
-          # This script atomically remounts /etc when switching configuration.
-          # On a (re-)boot this should not run because /etc is mounted via a
-          # systemd mount unit instead.
-          # The activation script can also be called in cases where we didn't have
-          # an initrd though, like for instance when using  nixos-enter,
-          # so we cannot assume that /etc has already been mounted.
-          #
-          # To a large extent this mimics what composefs does. Because
-          # it's relatively simple, however, we avoid the composefs dependency.
-          # Since this script is not idempotent, it should not run when etc hasn't
-          # changed.
-          if [[ ! $IN_NIXOS_SYSTEMD_STAGE1 ]] && [[ "${config.system.build.etc}/etc" != "$(readlink -f /run/current-system/etc)" ]]; then
-            echo "remounting /etc..."
-
-            ${lib.optionalString config.system.etc.overlay.mutable ''
-              # These directories are usually created in initrd,
-              # but we need to create them here when we're called directly,
-              # for instance by nixos-enter
-              mkdir --parents /.rw-etc/upper /.rw-etc/work
-              chmod 0755 /.rw-etc /.rw-etc/upper /.rw-etc/work
-            ''}
-
-            tmpMetadataMount=$(TMPDIR="/run" mktemp --directory -t nixos-etc-metadata.XXXXXXXXXX)
-            mount --type erofs --options ro,nodev,nosuid ${config.system.build.etcMetadataImage} "$tmpMetadataMount"
-
-            ${lib.optionalString config.system.etc.overlay.mutable ''
-              # Clear stale opaque markers from the upperdir so that lowerdir
-              # entries added by the new generation are not hidden.
-              # See https://github.com/NixOS/nixpkgs/issues/505475
-              ${config.system.nixos-init.package}/bin/clear-etc-opaque "$tmpMetadataMount" /.rw-etc/upper
-            ''}
-
-            # There was no previous /etc mounted. This happens when we're called
-            # directly without an initrd, like with nixos-enter.
-            if ! mountpoint -q /etc; then
-              mount --type overlay \
-                --options nodev,nosuid,lowerdir="$tmpMetadataMount"::${config.system.build.etcBasedir},${etcOverlayOptions} \
-                overlay /etc
-            else
-              # Mount the new /etc overlay to a temporary private mount.
-              # This needs the indirection via a private bind mount because you
-              # cannot move shared mounts.
-              tmpEtcMount=$(TMPDIR="/run" mktemp --directory -t nixos-etc.XXXXXXXXXX)
-              mount --bind --make-private "$tmpEtcMount" "$tmpEtcMount"
-              mount --type overlay \
-                --options nodev,nosuid,lowerdir="$tmpMetadataMount"::${config.system.build.etcBasedir},${etcOverlayOptions} \
-                overlay "$tmpEtcMount"
-
-              # Before moving the new /etc overlay under the old /etc, we have to
-              # move mounts on top of /etc to the new /etc mountpoint.
-              findmnt /etc --submounts --list --noheading --kernel --output TARGET | while read -r mountPoint; do
-                if [[ "$mountPoint" = "/etc" ]]; then
-                  continue
-                fi
-
-                tmpMountPoint="$tmpEtcMount/''${mountPoint:5}"
-                  ${
-                    if config.system.etc.overlay.mutable then
-                      ''
-                        if [[ -f "$mountPoint" ]]; then
-                          touch "$tmpMountPoint"
-                        elif [[ -d "$mountPoint" ]]; then
-                          mkdir -p "$tmpMountPoint"
-                        fi
-                      ''
-                    else
-                      ''
-                        if [[ ! -e "$tmpMountPoint" ]]; then
-                          echo "Skipping undeclared mountpoint in environment.etc: $mountPoint"
-                          continue
-                        fi
-                      ''
-                  }
-                mount --bind "$mountPoint" "$tmpMountPoint"
-              done
-
-              # Move the new temporary /etc mount underneath the current /etc mount.
-              mount --move --beneath "$tmpEtcMount" /etc
-
-              # Unmount the top /etc mount to atomically reveal the new mount.
-              umount --lazy --recursive /etc
-
-              # Unmount the temporary mount
-              umount --lazy "$tmpEtcMount"
-              rmdir "$tmpEtcMount"
-            fi
-
-            # Unmount old metadata mounts
-            findmnt --type erofs --list --kernel --output TARGET | while read -r mountPoint; do
-              if [[ ("$mountPoint" =~ ^/run/nixos-etc-metadata\..{10}$ || "$mountPoint" =~ ^/run/nixos-etc-metadata$ ) &&
-                    "$mountPoint" != "$tmpMetadataMount" ]]; then
-                umount --lazy "$mountPoint"
-                rmdir "$mountPoint"
-              fi
-            done
-          fi
-        ''
-      else
-        ''
-          # Set up the statically computed bits of /etc.
-          echo "setting up /etc..."
-          ${pkgs.perl.withPackages (p: [ p.FileSlurp ])}/bin/perl ${./setup-etc.pl} ${etc}/etc
-        '';
-
-    system.build.etcBasedir = pkgs.runCommandLocal "etc-lowerdir" { } ''
-      set -euo pipefail
-
-      makeEtcEntry() {
-        src="$1"
-        target="$2"
-
-        if [[ -f "$src" ]]; then
-          # Small regular files are inlined into the erofs metadata image by
-          # build-composefs-dump.py and served directly from there, so we do
-          # not need a copy in the basedir data layer. Keep the size check in
-          # sync with INLINE_CONTENT_MAX in build-composefs-dump.py. Empty
-          # files need no backing copy either.
-          size=$(stat --dereference --format=%s "$src")
-          if (( size <= ${toString etcInlineContentMax} )); then
-            return
-          fi
-        fi
-
-        mkdir -p "$out/$(dirname "$target")"
-        cp "$src" "$out/$target"
-      }
-
-      mkdir -p "$out"
-      ${lib.concatMapStringsSep "\n" (
-        etcEntry:
-        lib.escapeShellArgs [
-          "makeEtcEntry"
-          # Force local source paths to be added to the store
-          "${etcEntry.source}"
-          etcEntry.target
-        ]
-      ) etcBasedirEntries}
+    # Overridden by system.etc.confext.
+    system.build.etcActivationCommands = lib.mkDefault ''
+      # Set up the statically computed bits of /etc.
+      echo "setting up /etc..."
+      ${pkgs.perl.withPackages (p: [ p.FileSlurp ])}/bin/perl ${./setup-etc.pl} ${etc}/etc
     '';
-
-    system.build.etcMetadataImage =
-      let
-        etcJson = pkgs.writeText "etc-json" (builtins.toJSON etc');
-        etcDump = pkgs.runCommandLocal "etc-dump" { } ''
-          ${lib.getExe pkgs.buildPackages.python3} ${./build-composefs-dump.py} ${etcJson} > $out
-        '';
-      in
-      pkgs.runCommandLocal "etc-metadata.erofs"
-        {
-          nativeBuildInputs = with pkgs.buildPackages; [
-            composefs
-            erofs-utils
-          ];
-        }
-        ''
-          mkcomposefs --from-file ${etcDump} $out
-          fsck.erofs $out
-        '';
 
   };
 

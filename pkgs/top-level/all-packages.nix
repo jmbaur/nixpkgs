@@ -704,6 +704,8 @@ with pkgs;
 
   makeAutostartItem = callPackage ../build-support/make-startupitem { };
 
+  makeConfext = callPackage ../build-support/make-confext { };
+
   makeImpureTest = callPackage ../build-support/make-impure-test.nix;
 
   makeInitrd = callPackage ../build-support/kernel/make-initrd.nix; # Args intentionally left out

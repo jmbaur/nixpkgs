@@ -11,8 +11,6 @@ let
   opt = options.system.nixos;
 
   inherit (lib)
-    concatStringsSep
-    mapAttrsToList
     toLower
     literalExpression
     match
@@ -25,10 +23,11 @@ let
 
   needsEscaping = s: null != builtins.match "[a-zA-Z0-9]+" s;
   escapeIfNecessary = s: if needsEscaping s then s else ''"${lib.escape [ "$" "\"" "\\" "`" ] s}"'';
-  attrsToText =
-    attrs:
-    concatStringsSep "\n" (mapAttrsToList (n: v: "${n}=${escapeIfNecessary (toString v)}") attrs)
-    + "\n";
+  attrsToText = lib.generators.toKeyValue {
+    mkKeyValue = lib.generators.mkKeyValueDefault {
+      mkValueString = v: escapeIfNecessary (toString v);
+    } "=";
+  };
 
   osReleaseContents =
     let

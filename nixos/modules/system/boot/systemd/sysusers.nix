@@ -45,7 +45,7 @@ let
     )}
   '';
 
-  immutableEtc = config.system.etc.overlay.enable && !config.system.etc.overlay.mutable;
+  immutableEtc = config.system.etc.confext.immutable;
   # The location of the password files when using an immutable /etc.
   immutablePasswordFilesLocation = "/var/lib/nixos/etc";
   passwordFilesLocation = if immutableEtc then immutablePasswordFilesLocation else "/etc";

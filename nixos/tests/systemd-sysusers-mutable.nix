@@ -19,7 +19,7 @@ in
       users.mutableUsers = true;
 
       # Prerequisites
-      system.etc.overlay.enable = true;
+      system.etc.confext.enable = true;
       boot.initrd.systemd.enable = true;
       boot.kernelPackages = pkgs.linuxPackages_latest;
 

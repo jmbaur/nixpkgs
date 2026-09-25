@@ -46,8 +46,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   binaries = [
     "initrd-init"
-    "find-etc"
-    "clear-etc-opaque"
+    "etc-confext-activate"
+    "etc-confext-sysroot"
     "resolve-in-root"
     "env-generator"
   ];

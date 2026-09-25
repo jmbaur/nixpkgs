@@ -12,9 +12,13 @@ if [ -z "$NIXOS_ENTER_REEXEC" ]; then
     if [ "$(id -u)" != 0 ]; then
         extraFlags="-r"
     fi
-    exec unshare --fork --mount --uts --mount-proc $extraFlags -- "$0" "$@"
+    exec unshare --fork --mount --propagation private --uts --mount-proc $extraFlags -- "$0" "$@"
 else
-    mount --make-rprivate /
+    # unshare(1) made every mount private, which cut them off from the host.
+    # Share them again, in peer groups of this namespace's own, so that mounts
+    # made in namespaces forked off from it (e.g. by systemd-confext) propagate
+    # back into it.
+    mount --make-rshared /
 fi
 
 mountPoint=/mnt
@@ -91,8 +95,6 @@ chroot_add_resolv_conf() {
     mount --bind /etc/resolv.conf "$resolvConf"
 }
 
-chroot_add_resolv_conf "$mountPoint" || echo "$0: failed to set up resolv.conf" >&2
-
 (
     # If silent, write both stdout and stderr of activation script to /dev/null
     # otherwise, write both streams to stderr of this process
@@ -107,6 +109,10 @@ chroot_add_resolv_conf "$mountPoint" || echo "$0: failed to set up resolv.conf" 
     # Hide the unhelpful "failed to replace specifiers" errors caused by missing /etc/machine-id.
     chroot "$mountPoint" "$system/sw/bin/systemd-tmpfiles" --create --remove -E 2> /dev/null || true
 )
+
+# After activation, which may replace /etc (e.g. by merging it as a
+# systemd-confext image) and would hide a resolv.conf bound into it earlier.
+chroot_add_resolv_conf "$mountPoint" || echo "$0: failed to set up resolv.conf" >&2
 
 unset TMPDIR
 

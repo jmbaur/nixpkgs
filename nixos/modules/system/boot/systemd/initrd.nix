@@ -642,8 +642,6 @@ in
 
         # Resolving sysroot symlinks without code exec
         "${config.system.nixos-init.package}/bin/resolve-in-root"
-        # Find the etc paths
-        "${config.system.nixos-init.package}/bin/find-etc"
       ]
       ++ lib.optionals config.system.nixos-init.enable [
         "${config.system.nixos-init.package}/bin/initrd-init"
@@ -763,7 +761,10 @@ in
           what = "/run";
           options = "rbind";
           unitConfig = {
-            # See the comment on the mount unit for /run/etc-metadata
+            # Ordering this after local-fs.target would delay everything that
+            # waits for local-fs.target until the root is mounted, which breaks
+            # setups like an sshd that has to be up before encrypted disks can
+            # be unlocked.
             DefaultDependencies = false;
           };
           requiredBy = [ "initrd-fs.target" ];

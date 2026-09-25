@@ -9,7 +9,7 @@
     { modulesPath, ... }:
     {
       boot.initrd.systemd.enable = true;
-      system.etc.overlay.enable = true;
+      system.etc.confext.enable = true;
       services.userborn.enable = true;
       boot.postBootCommands = lib.mkForce "";
 

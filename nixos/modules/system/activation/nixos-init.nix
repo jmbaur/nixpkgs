@@ -33,10 +33,6 @@ in
         }
         // lib.optionalAttrs (config.environment.usrbinenv != null) {
           env_binary = config.environment.usrbinenv;
-        }
-        // lib.optionalAttrs config.system.etc.overlay.enable {
-          etc_metadata_image = config.system.build.etcMetadataImage;
-          etc_basedir = config.system.build.etcBasedir;
         };
       };
     }
@@ -47,8 +43,8 @@ in
           message = "nixos-init can only be used with boot.initrd.systemd.enable";
         }
         {
-          assertion = config.system.etc.overlay.enable;
-          message = "nixos-init can only be used with system.etc.overlay.enable";
+          assertion = config.system.etc.confext.enable;
+          message = "nixos-init can only be used with system.etc.confext.enable";
         }
         {
           assertion = config.services.userborn.enable || config.systemd.sysusers.enable;

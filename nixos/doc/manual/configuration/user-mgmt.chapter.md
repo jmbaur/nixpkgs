@@ -146,7 +146,8 @@ location to `/etc`:
 ```
 
 This is useful when you store `/etc` on a `tmpfs` or if `/etc` is immutable
-(e.g. when using `system.etc.overlay.mutable = false;`). In the latter case the
+(e.g. when using `systemd.confext.settings.ConfExt.Mutable = "no";`, see
+[](#sec-etc-confext)). In the latter case the
 original files are by default stored in `/var/lib/nixos`.
 
 Userborn implements immutable users by re-mounting the password files

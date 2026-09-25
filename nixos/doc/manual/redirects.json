@@ -2305,7 +2305,23 @@
   "sec-non-switchable-system": [
     "index.html#sec-non-switchable-system"
   ],
-  "sec-etc-overlay": [
+  "sec-etc-confext-how": [
+    "index.html#sec-etc-confext-how"
+  ],
+  "sec-etc-confext-limitations": [
+    "index.html#sec-etc-confext-limitations"
+  ],
+  "sec-etc-confext-migration": [
+    "index.html#sec-etc-confext-migration"
+  ],
+  "sec-etc-confext-mutability": [
+    "index.html#sec-etc-confext-mutability"
+  ],
+  "sec-etc-confext-runtime": [
+    "index.html#sec-etc-confext-runtime"
+  ],
+  "sec-etc-confext": [
+    "index.html#sec-etc-confext",
     "index.html#sec-etc-overlay"
   ],
   "sec-writing-documentation": [

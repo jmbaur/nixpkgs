@@ -243,7 +243,10 @@ in
   activation-bashless = runTest ./activation/bashless.nix;
   activation-bashless-closure = pkgs.callPackage ./activation/bashless-closure.nix { };
   activation-bashless-image = runTest ./activation/bashless-image.nix;
+  activation-etc-classic-migration = runTest ./activation/etc-classic-migration.nix;
+  activation-etc-confext = runTest ./activation/etc-confext.nix;
   activation-etc-overlay-immutable = runTest ./activation/etc-overlay-immutable.nix;
+  activation-etc-overlay-migration = runTest ./activation/etc-overlay-migration.nix;
   activation-etc-overlay-mutable = runTest ./activation/etc-overlay-mutable.nix;
   activation-lib = pkgs.callPackage ../modules/system/activation/lib-test.nix { };
   activation-nix-channel = runTest ./activation/nix-channel.nix;
@@ -1818,6 +1821,9 @@ in
   };
   systemd-bpf = runTest ./systemd-bpf.nix;
   systemd-capsules = runTest ./systemd-capsules.nix;
+  systemd-confext = runTest ./systemd-confext.nix;
+  systemd-confext-extension-images = runTest ./systemd-confext-extension-images.nix;
+  systemd-confext-mutable = runTest ./systemd-confext-mutable.nix;
   systemd-confinement = handleTest ./systemd-confinement { };
   systemd-coredump = runTest ./systemd-coredump.nix;
   systemd-credentials-tpm2 = runTest ./systemd-credentials-tpm2.nix;

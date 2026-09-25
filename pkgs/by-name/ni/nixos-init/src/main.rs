@@ -1,8 +1,14 @@
-use std::{env, io::Write, process::ExitCode};
+use std::{
+    env,
+    io::{IsTerminal, Write},
+    process::ExitCode,
+};
 
 use log::Level;
 
-use nixos_init::{clear_etc_opaque, env_generator, find_etc, initrd_init, resolve_in_root};
+use nixos_init::{
+    env_generator, etc_confext_activate, etc_confext_sysroot, initrd_init, resolve_in_root,
+};
 
 fn main() -> ExitCode {
     let arg0 = env::args()
@@ -12,8 +18,8 @@ fn main() -> ExitCode {
 
     setup_logger();
     let entrypoint = match arg0.as_str() {
-        "clear-etc-opaque" => clear_etc_opaque,
-        "find-etc" => find_etc,
+        "etc-confext-activate" => etc_confext_activate,
+        "etc-confext-sysroot" => etc_confext_sysroot,
         "resolve-in-root" => resolve_in_root,
         "initrd-init" => initrd_init,
         "env-generator" => env_generator,
@@ -37,6 +43,14 @@ fn main() -> ExitCode {
 // This way, systemd can interpret the levels correctly.
 fn setup_logger() {
     let env = env_logger::Env::default().filter_or("LOG_LEVEL", "info");
+
+    // Nothing interprets the levels on a terminal, as when activating from a shell.
+    if std::io::stderr().is_terminal() {
+        env_logger::Builder::from_env(env)
+            .format(|buf, record| writeln!(buf, "{}", record.args()))
+            .init();
+        return;
+    }
 
     env_logger::Builder::from_env(env)
         .format(|buf, record| {

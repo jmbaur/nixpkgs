@@ -55,7 +55,7 @@ let
       '';
   previousConfigPath = "/var/lib/userborn/previous-userborn.json";
 
-  immutableEtc = config.system.etc.overlay.enable && !config.system.etc.overlay.mutable;
+  immutableEtc = config.system.etc.confext.immutable;
   # The files live outside /etc and need to be linked or bind-mounted there.
   filesOutsideEtc = !cfg.static && cfg.passwordFilesLocation != "/etc";
   # The filenames created by userborn.
@@ -144,7 +144,7 @@ in
       }
       {
         assertion = (immutableEtc && !cfg.static) -> (cfg.passwordFilesLocation != "/etc");
-        message = "When `system.etc.overlay.mutable = false` and `services.userborn.static = false`, `services.userborn.passwordFilesLocation` cannot be set to `/etc`";
+        message = "When `/etc` is immutable (see `systemd.confext.settings.ConfExt.Mutable`) and `services.userborn.static = false`, `services.userborn.passwordFilesLocation` cannot be set to `/etc`";
       }
       {
         assertion = !(cfg.static && config.system.switch.enable);
