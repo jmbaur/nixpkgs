@@ -48,6 +48,43 @@ might write:
 Both `chicken` and its eggs have a setup hook which configures the environment
 variables `CHICKEN_INCLUDE_PATH` and `CHICKEN_REPOSITORY_PATH`.
 
+What compiled programs use at run time is kept apart from what is only used to
+build them, so that they can be deployed without the rest:
+
+* `chicken` puts `libchicken` and the repository of its core modules in its
+  `lib` output, which is all that programs refer to. Its tools and headers,
+  which refer to the C compiler, are in `out`.
+* Eggs put their extensions, import libraries and programs in `out`, and the
+  objects and link files used to link programs statically, type and inlining
+  information, and the `.egg-info` file by which `chicken-install` and
+  `chicken-status` know of the egg, in `dev`. Taking an egg as an input brings
+  in both.
+
+## Cross-Compilation {#sec-chicken-cross}
+
+The eggs of CHICKEN 5 and 6 can be cross-compiled, for example with
+`pkgsCross.aarch64-multiplatform.chickenPackages_5.chickenEggs.base64`.
+
+When `chicken` is used from `nativeBuildInputs` while cross-compiling, it is a
+"cross chicken" as described in the "Cross development" chapter of the CHICKEN
+manual: it runs on the build platform but compiles for the host platform,
+against the CHICKEN runtime built for the host. Loading the eggs a program
+imports is part of compiling it, though, so the compiler needs those eggs built
+for the build platform. Hence `CHICKEN_REPOSITORY_PATH` is populated from
+`nativeBuildInputs` in that case. Eggs from `chickenEggs` propagate their build
+for the build platform there, so they are given in `buildInputs` only, as when
+not cross-compiling:
+
+```nix
+{
+  nativeBuildInputs = [ chicken ];
+  buildInputs = [
+    chicken
+    chickenPackages.chickenEggs.srfi-189
+  ];
+}
+```
+
 ## Updating Eggs {#sec-chicken-updating-eggs}
 
 For CHICKEN 5 and 6, the egg set is generated from upstream's list of latest
