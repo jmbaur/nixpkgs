@@ -151,7 +151,7 @@ in
   };
   lmdb-ht = addToBuildInputs pkgs.lmdb;
   magic = addToBuildInputs pkgs.file;
-  magic-pipes = addToBuildInputs pkgs.chickenPackages_5.chickenEggs.regex;
+  magic-pipes = addToPropagatedBuildInputs chickenEggs.regex;
   # requires PCRE
   mdh = broken;
   # missing dependency in upstream egg
