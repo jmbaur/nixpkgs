@@ -11,6 +11,8 @@
 
 let
   overrides = callPackage overridesFile { };
+
+  binaryVersion = toString chicken.binaryVersion;
 in
 lib.extendMkDerivation {
   constructDrv = stdenv.mkDerivation;
@@ -43,6 +45,12 @@ lib.extendMkDerivation {
     {
       pname = "chicken-${pname}";
       inherit version;
+      # Eggs are found in dev, which propagates out and the eggs they depend on.
+      outputs =
+        args.outputs or [
+          "out"
+          "dev"
+        ];
       nativeBuildInputs = [
         chicken
         makeWrapper
@@ -79,21 +87,47 @@ lib.extendMkDerivation {
         args.installPhase or ''
           runHook preInstall
 
+          repository=$out/lib/chicken/${binaryVersion}
           export CHICKEN_INSTALL_PREFIX=$out
-          export CHICKEN_INSTALL_REPOSITORY=$out/lib/chicken/${toString chicken.binaryVersion}
+          export CHICKEN_INSTALL_REPOSITORY=$repository
           chicken-install -cached -host ${lib.escapeShellArgs chickenInstallFlags}
 
-          # Patching the generated .egg-info instead of the original .egg to work
-          # around https://bugs.call-cc.org/ticket/1855, which is unfixed as of
-          # CHICKEN 6.0.0: eggs whose .egg carries no version property are
-          # installed without one.
-          csi -e "(write (cons '(version \"${version}\") (read)))" < "$CHICKEN_INSTALL_REPOSITORY/${pname}.egg-info" > "${pname}.egg-info.new"
-          mv "${pname}.egg-info.new" "$CHICKEN_INSTALL_REPOSITORY/${pname}.egg-info"
+          # What only the compiler and the egg tools use goes to dev, so that eggs
+          # loaded at run time do not bring it along: objects and link files, for
+          # linking statically, type and inlining information, and the .egg-info,
+          # by which chicken-install finds that the egg is installed.
+          devRepository=$dev/lib/chicken/${binaryVersion}
+          mkdir -p "$devRepository"
+          for file in "$repository"/*.{o,a,link,types,inline,egg-info}; do
+            if [[ -e "$file" ]]; then
+              mv "$file" "$devRepository/"
+            fi
+          done
+
+          # Patching the generated .egg-info instead of the original .egg; see the
+          # script for why.
+          csi -s ${./patch-egg-info.scm} ${lib.escapeShellArg version} "$devRepository" < "$devRepository/${pname}.egg-info" > "${pname}.egg-info.new"
+          mv "${pname}.egg-info.new" "$devRepository/${pname}.egg-info"
+
+          # Programs run with the repositories of the eggs they use, which are the
+          # ones holding extensions and import libraries, in the out outputs, and
+          # that of the runtime, with the core modules, as setting
+          # CHICKEN_REPOSITORY_PATH replaces it.
+          runtimeRepositories=$repository:${lib.getLib chicken}/lib/chicken/${binaryVersion}
+          IFS=: read -ra repositories <<< "''${CHICKEN_REPOSITORY_PATH-}"
+          for dependency in "''${repositories[@]}"; do
+            for library in "$dependency"/*.so; do
+              if [[ -e "$library" && ":$runtimeRepositories:" != *":$dependency:"* ]]; then
+                runtimeRepositories+=":$dependency"
+              fi
+              break
+            done
+          done
 
           for f in $out/bin/*
           do
             wrapProgram $f \
-              --prefix CHICKEN_REPOSITORY_PATH : "$out/lib/chicken/${toString chicken.binaryVersion}:$CHICKEN_REPOSITORY_PATH" \
+              --prefix CHICKEN_REPOSITORY_PATH : "$runtimeRepositories" \
               --prefix CHICKEN_INCLUDE_PATH : "$CHICKEN_INCLUDE_PATH:$out/share" \
               --prefix PATH : "$out/bin:${chicken}/bin"
           done

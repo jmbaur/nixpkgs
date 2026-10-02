@@ -54,6 +54,11 @@ build them, so that they can be deployed without the rest:
 * `chicken` puts `libchicken` and the repository of its core modules in its
   `lib` output, which is all that programs refer to. Its tools and headers,
   which refer to the C compiler, are in `out`.
+* Eggs put their extensions, import libraries and programs in `out`, and the
+  objects and link files used to link programs statically, type and inlining
+  information, and the `.egg-info` file by which `chicken-install` and
+  `chicken-status` know of the egg, in `dev`. Taking an egg as an input brings
+  in both.
 
 ## Updating Eggs {#sec-chicken-updating-eggs}
 
