@@ -28,6 +28,18 @@ let
   };
 in
 {
+  # Upstream builds its components only for the host, for compiling against,
+  # which leaves it empty when cross-compiling, yet the eggs using it load it
+  # at run time, so it is built for the target, too.
+  bind =
+    old:
+    lib.optionalAttrs (stdenv.hostPlatform != stdenv.buildPlatform) {
+      postPatch = (old.postPatch or "") + ''
+        substituteInPlace bind.egg \
+          --replace-fail "(host" "" \
+          --replace-fail "(component-dependencies bind-translator)))))" "(component-dependencies bind-translator))))"
+      '';
+    };
   breadline = addToBuildInputs pkgs.readline;
   blas = addToBuildInputsWithPkgConfig pkgs.blas;
   blosc = addToBuildInputs pkgs.c-blosc;
@@ -40,7 +52,25 @@ in
       srfi-13
     ]) old);
   cmark = addToBuildInputs pkgs.cmark;
-  crypt = addToBuildInputs pkgs.libxcrypt;
+  crypt =
+    old:
+    (addToBuildInputs pkgs.libxcrypt old)
+    # When cross-compiling, the build script cannot probe which hash types
+    # crypt() supports, so the egg provides all of them. It says so using pp
+    # without importing it, unless the hash types are forced, which naming none
+    # of them does without changing that.
+    // lib.optionalAttrs (stdenv.hostPlatform != stdenv.buildPlatform) {
+      env = old.env // {
+        FORCE_CRYPT_HASHTYPES = "none";
+      };
+      # The build script also compiles the import library for the build
+      # platform, which the compiler for the target cannot do; the one for the
+      # target is built separately anyway.
+      postPatch = ''
+        substituteInPlace build-crypt.scm \
+          --replace-fail '(compile-file "crypt.import.scm" #:options `("-s" "-O2"))' ""
+      '';
+    };
   epoxy =
     old:
     (addToPropagatedBuildInputsWithPkgConfig pkgs.libepoxy old)
@@ -121,10 +151,15 @@ in
   leveldb = addToBuildInputs pkgs.leveldb;
   libyaml = old: {
     env.NIX_CFLAGS_COMPILE = "-Wno-error=format-security";
+    # The bindings pass pointers for the va_list arguments of libfyaml, which
+    # only works where va_list is one, unlike on ARM outside of Darwin.
+    meta = old.meta // {
+      broken = stdenv.hostPlatform.isAarch && !stdenv.hostPlatform.isDarwin;
+    };
   };
   lmdb-ht = addToBuildInputs pkgs.lmdb;
   magic = addToBuildInputs pkgs.file;
-  magic-pipes = addToBuildInputs pkgs.chickenPackages_5.chickenEggs.regex;
+  magic-pipes = addToPropagatedBuildInputs chickenEggs.regex;
   # requires PCRE
   mdh = broken;
   # missing dependency in upstream egg
