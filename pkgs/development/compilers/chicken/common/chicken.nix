@@ -55,9 +55,20 @@ stdenv.mkDerivation (finalAttrs: {
   # phase.
   dontConfigure = true;
 
+  # Compiled programs link to libchicken, which records where the runtime's
+  # repository and data are, so those go to the lib output, and programs refer
+  # to that alone. The rest refers to the C compiler, by chicken-config.h.
+  outputs = [
+    "out"
+    "lib"
+  ];
+
   makeFlags = [
     "PLATFORM=${platform}"
     "PREFIX=$(out)"
+    "LIBDIR=$(lib)/lib"
+    "DATADIR=$(lib)/share/chicken"
+    "DOCDIR=$(out)/share/chicken/doc"
     "C_COMPILER=$(CC)"
     "CXX_COMPILER=$(CXX)"
   ]
