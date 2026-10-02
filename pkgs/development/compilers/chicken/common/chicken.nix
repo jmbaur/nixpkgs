@@ -145,6 +145,8 @@ stdenv.mkDerivation (finalAttrs: {
     "C_COMPILER=$(CC)"
     "CXX_COMPILER=$(CXX)"
   ]
+  # Otherwise libchicken.so is linked with -static, which cannot work.
+  ++ lib.optional stdenv.hostPlatform.isStatic "STATICBUILD=1"
   ++ (lib.optionals stdenv.hostPlatform.isDarwin [
     "XCODE_TOOL_PATH=${darwin.binutils.bintools}/bin"
     "LINKER_OPTIONS=-headerpad_max_install_names"
@@ -224,8 +226,9 @@ stdenv.mkDerivation (finalAttrs: {
   # binaries whose install name install_name_tool has already rewritten to
   # $out/lib/libchicken.dylib, which does not exist until the install phase.
   # A cross chicken's test suite builds programs for the target, which cannot
-  # run here.
-  doCheck = !stdenv.hostPlatform.isDarwin && !isCrossChicken;
+  # run here. A static chicken's test suite builds shared libraries, which it
+  # cannot.
+  doCheck = !stdenv.hostPlatform.isDarwin && !isCrossChicken && !stdenv.hostPlatform.isStatic;
 
   # The generic check phase probes for a target with a bare `make check`, which
   # fails here because PLATFORM is only given in makeFlags, so the test suite
