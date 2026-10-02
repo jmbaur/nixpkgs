@@ -143,6 +143,11 @@ in
   leveldb = addToBuildInputs pkgs.leveldb;
   libyaml = old: {
     env.NIX_CFLAGS_COMPILE = "-Wno-error=format-security";
+    # The bindings pass pointers for the va_list arguments of libfyaml, which
+    # only works where va_list is one, unlike on ARM outside of Darwin.
+    meta = old.meta // {
+      broken = stdenv.hostPlatform.isAarch && !stdenv.hostPlatform.isDarwin;
+    };
   };
   lmdb-ht = addToBuildInputs pkgs.lmdb;
   magic = addToBuildInputs pkgs.file;
