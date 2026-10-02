@@ -79,6 +79,12 @@ stdenv.mkDerivation (finalAttrs: {
     darwin.autoSignDarwinBinariesHook
   ];
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+  # On platforms that need relinking, the install-bin target deletes
+  # libchicken.so and relinks it, racing with install-libs, which installs it.
+  enableParallelInstalling = false;
+
   # Neither release's test suite survives the Darwin sandbox, for a different
   # reason each: CHICKEN 5's runtests.sh drives the compiler through
   # /usr/bin/env, which the sandbox denies, and CHICKEN 6's csc tests run
