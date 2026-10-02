@@ -22,6 +22,11 @@ let
   brokenOnDarwin = addMetaAttrs { broken = stdenv.hostPlatform.isDarwin; };
 in
 {
+  # Its components are only built for the build platform of a cross chicken,
+  # which leaves it empty when cross-compiling, yet eggs using it load it at
+  # run time.
+  bind = addMetaAttrs { broken = stdenv.hostPlatform != stdenv.buildPlatform; };
+
   # Eggs binding to a native library.
   blas = addToBuildInputsWithPkgConfig pkgs.blas;
   breadline = addToBuildInputs pkgs.readline;

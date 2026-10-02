@@ -28,6 +28,10 @@ let
   };
 in
 {
+  # Its components are only built for the build platform of a cross chicken,
+  # which leaves it empty when cross-compiling, yet eggs using it load it at
+  # run time.
+  bind = addMetaAttrs { broken = stdenv.hostPlatform != stdenv.buildPlatform; };
   breadline = addToBuildInputs pkgs.readline;
   blas = addToBuildInputsWithPkgConfig pkgs.blas;
   blosc = addToBuildInputs pkgs.c-blosc;
