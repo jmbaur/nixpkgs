@@ -51,6 +51,7 @@ makeScopeWithSplicing' {
         hash
         binaryVersion
         postPatch
+        attrPath
         ;
     };
 
