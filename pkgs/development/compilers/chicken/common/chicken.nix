@@ -68,6 +68,21 @@ stdenv.mkDerivation (finalAttrs: {
   ])
   ++ (lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
     "HOSTSYSTEM=${stdenv.hostPlatform.config}"
+    # Otherwise detected from the machine building it. The value is what
+    # config-arch.sh reports on the host platform.
+    "ARCH=${
+      with stdenv.hostPlatform;
+      if isx86_64 then
+        "x86-64"
+      else if isx86_32 then
+        "x86"
+      else if isPower && !isPower64 then
+        (if isDarwin then "ppc.darwin" else "ppc.sysv")
+      else if isRiscV then
+        "riscv"
+      else
+        ""
+    }"
     "TARGET_C_COMPILER=${stdenv.cc}/bin/${stdenv.cc.targetPrefix}cc"
     "TARGET_CXX_COMPILER=${stdenv.cc}/bin/${stdenv.cc.targetPrefix}c++"
   ]);
