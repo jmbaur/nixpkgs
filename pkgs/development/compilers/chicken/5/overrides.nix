@@ -44,7 +44,25 @@ in
       srfi-13
     ]) old);
   cmark = addToBuildInputs pkgs.cmark;
-  crypt = addToBuildInputs pkgs.libxcrypt;
+  crypt =
+    old:
+    (addToBuildInputs pkgs.libxcrypt old)
+    # When cross-compiling, the build script cannot probe which hash types
+    # crypt() supports, so the egg provides all of them. It says so using pp
+    # without importing it, unless the hash types are forced, which naming none
+    # of them does without changing that.
+    // lib.optionalAttrs (stdenv.hostPlatform != stdenv.buildPlatform) {
+      env = old.env // {
+        FORCE_CRYPT_HASHTYPES = "none";
+      };
+      # The build script also compiles the import library for the build
+      # platform, which the compiler for the target cannot do; the one for the
+      # target is built separately anyway.
+      postPatch = ''
+        substituteInPlace build-crypt.scm \
+          --replace-fail '(compile-file "crypt.import.scm" #:options `("-s" "-O2"))' ""
+      '';
+    };
   epoxy =
     old:
     (addToPropagatedBuildInputsWithPkgConfig pkgs.libepoxy old)
