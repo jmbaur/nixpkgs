@@ -82,13 +82,15 @@ makeScopeWithSplicing' {
               in
               # Taking the dependencies through callPackage gets them spliced, so
               # eggDerivation can use them both on the build platform (to compile
-              # against) and on the host platform (to run with).
+              # against) and on the host platform (to run with). The same goes
+              # for the egg itself, which is only spliced when cross-compiling.
               eggself.callPackage (lib.setFunctionArgs (
                 deps:
                 self.eggDerivation {
                   inherit pname version;
                   src = self.fetchegg (eggData // { inherit pname; });
                   propagatedBuildInputs = map (x: deps.${x}) eggDependencies;
+                  buildPlatformEgg = deps.${pname}.__spliced.buildHost or null;
                   meta.homepage = "https://wiki.call-cc.org/eggref/${majorVersion}/${pname}";
                   meta.description = synopsis;
                   meta.license =
@@ -126,7 +128,7 @@ makeScopeWithSplicing' {
                       }
                     ).${license} or license;
                 }
-              ) (lib.genAttrs eggDependencies (_: true))) { }
+              ) (lib.genAttrs (eggDependencies ++ [ pname ]) (_: true))) { }
             ) (lib.importTOML depsFile));
         }
     );
