@@ -24,6 +24,12 @@ let
   # built, so DESTDIR redirects them to where they can be moved into $out.
   isCross = stdenv.hostPlatform != stdenv.buildPlatform;
   binaryVersion = toString chicken.binaryVersion;
+
+  # The chicken that runs where the egg does, which the egg links to and its
+  # programs run with. Spliced, chicken alone is the one compiling for the
+  # target platform, which is a cross chicken in the build platform's egg set
+  # of a cross-compiled one, as that set's target is the host platform.
+  hostChicken = chicken.__spliced.hostHost or chicken;
 in
 lib.extendMkDerivation {
   constructDrv = stdenv.mkDerivation;
@@ -75,7 +81,7 @@ lib.extendMkDerivation {
       # The runtime the egg is compiled against and links to, which, with
       # strictDeps, the chicken in nativeBuildInputs does not provide when
       # cross-compiling.
-      buildInputs = [ chicken ] ++ args.buildInputs or [ ];
+      buildInputs = [ hostChicken ] ++ args.buildInputs or [ ];
 
       strictDeps = args.strictDeps or true;
 
@@ -197,7 +203,7 @@ lib.extendMkDerivation {
             # ones holding extensions and import libraries, in the out outputs, and
             # that of the runtime, with the core modules, as setting
             # CHICKEN_REPOSITORY_PATH replaces it.
-            runtimeRepositories=$repository:${lib.getLib chicken}/lib/chicken/${binaryVersion}
+            runtimeRepositories=$repository:${lib.getLib hostChicken}/lib/chicken/${binaryVersion}
             IFS=: read -ra repositories <<< "''${NIX_CHICKEN_TARGET_REPOSITORY_PATH-}"
             for dependency in "''${repositories[@]}"; do
               for library in "$dependency"/*.so; do
@@ -213,7 +219,7 @@ lib.extendMkDerivation {
               wrapProgram $f \
                 --prefix CHICKEN_REPOSITORY_PATH : "$runtimeRepositories" \
                 --prefix CHICKEN_INCLUDE_PATH : "$NIX_CHICKEN_TARGET_INCLUDE_PATH:$out/share" \
-                --prefix PATH : "$out/bin:${chicken}/bin"
+                --prefix PATH : "$out/bin:${hostChicken}/bin"
             done
 
             runHook postInstall
