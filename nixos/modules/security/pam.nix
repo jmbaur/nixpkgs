@@ -1572,6 +1572,16 @@ let
                 modulePath = "${package}/lib/security/pam_umask.so";
               }
               {
+                name = "keyinit";
+                enable = config.services.homed.enable;
+                control = "optional";
+                modulePath = "${package}/lib/security/pam_keyinit.so";
+                settings = {
+                  force = true;
+                  revoke = true;
+                };
+              }
+              {
                 name = "systemd_home";
                 enable = config.services.homed.enable;
                 control = "required";
