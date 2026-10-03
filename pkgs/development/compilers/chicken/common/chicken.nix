@@ -68,6 +68,28 @@ let
     )
   );
 
+  # What (software-version) evaluates to on the target platform.
+  targetSoftwareVersion =
+    with stdenv.targetPlatform;
+    if isDarwin then
+      "macosx"
+    else if isLinux then
+      "linux"
+    else if isFreeBSD then
+      "freebsd"
+    else if isOpenBSD then
+      "openbsd"
+    else if isNetBSD then
+      "netbsd"
+    else if isCygwin then
+      "cygwin"
+    else if isMinGW then
+      (if lib.versionAtLeast version "6" then "mingw" else "mingw32")
+    else if isSunOS then
+      "solaris"
+    else
+      "unknown";
+
   # CHICKEN 5 is R5RS with extensions; CHICKEN 6 targets R7RS.
   standard = if lib.versionAtLeast version "6" then "R7RS" else "R5RS";
 
@@ -104,6 +126,17 @@ stdenv.mkDerivation (finalAttrs: {
       substituteInPlace csc.scm --replace-fail \
         "(destination-repository 'target)))" \
         "(cons (destination-repository 'target) (##sys#split-path (or (get-environment-variable \"NIX_CHICKEN_TARGET_REPOSITORY_PATH\") \"\")))))"
+
+      # csc chooses how to compile and link, such as whether to make Mach-O
+      # bundles or ELF objects with an rpath, by the system it runs on, which
+      # is only right when compiling for the host.
+      substituteInPlace csc.scm \
+        --replace-fail "(software-version)" "(csc-software-version)" \
+        --replace-fail "(define windows" "(define (csc-software-version)
+        (if (or (not (feature? #:cross-chicken)) (member \"-host\" (command-line-arguments)))
+            (software-version)
+            '${targetSoftwareVersion}))
+      (define windows"
       rm csc.c
     '';
 
@@ -212,6 +245,19 @@ stdenv.mkDerivation (finalAttrs: {
   ${if isCrossChicken then "preBuild" else null} = ''
     makeFlags+=("TARGET_LIBRARIES=$(sed -n 's/^# define C_INSTALL_MORE_LIBS "\(.*\)"$/\1/p' \
       ${targetChicken}/include/chicken/chicken-config.h)")
+  '';
+
+  # The compiler loads the eggs it compiles against, built for the build
+  # platform, which link to the native chicken's libchicken. Where it is found
+  # by soname, they get the cross chicken's, which is already loaded, but on
+  # Darwin they refer to the native one by path, and a second runtime in the
+  # process makes the compiler panic. Searching DYLD_LIBRARY_PATH by leaf name
+  # comes first, so it makes them share the cross chicken's. Each program sets
+  # it anew, as the shell that csc runs the compiler through clears it.
+  ${if isCrossChicken && stdenv.hostPlatform.isDarwin then "postFixup" else null} = ''
+    for program in $out/bin/*; do
+      wrapProgram "$program" --prefix DYLD_LIBRARY_PATH : "$lib/lib"
+    done
   '';
 
   __structuredAttrs = true;
