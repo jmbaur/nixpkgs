@@ -22,10 +22,18 @@ let
   brokenOnDarwin = addMetaAttrs { broken = stdenv.hostPlatform.isDarwin; };
 in
 {
-  # Its components are only built for the build platform of a cross chicken,
-  # which leaves it empty when cross-compiling, yet eggs using it load it at
-  # run time.
-  bind = addMetaAttrs { broken = stdenv.hostPlatform != stdenv.buildPlatform; };
+  # Upstream builds its components only for the host, for compiling against,
+  # which leaves it empty when cross-compiling, yet the eggs using it load it
+  # at run time, so it is built for the target, too.
+  bind =
+    old:
+    lib.optionalAttrs (stdenv.hostPlatform != stdenv.buildPlatform) {
+      postPatch = (old.postPatch or "") + ''
+        substituteInPlace bind.egg \
+          --replace-fail "(host" "" \
+          --replace-fail "(component-dependencies bind-translator)))))" "(component-dependencies bind-translator))))"
+      '';
+    };
 
   # Eggs binding to a native library.
   blas = addToBuildInputsWithPkgConfig pkgs.blas;
