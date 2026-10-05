@@ -3,6 +3,7 @@
   stdenv,
   fetchurl,
   makeWrapper,
+  fixDarwinDylibNames,
   darwin,
   replaceVars,
   testers,
@@ -235,6 +236,9 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   # To compile csc anew, which must be done by the same version of CHICKEN.
   ++ lib.optional isCrossChicken buildPackages.${attrPath}.chicken
+  # Upstream gives libchicken.dylib a bare install name and rewrites it only in
+  # the programs it links, so programs linked to it otherwise cannot find it.
+  ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames
   ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
     darwin.autoSignDarwinBinariesHook
   ];
