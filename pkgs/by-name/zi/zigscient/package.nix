@@ -17,6 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
     "${finalAttrs.deps}"
     "-Doptimize=ReleaseFast"
   ];
+  # The vendored zig lib's SDKSettings.json predates zig 0.17.1, which expects a
+  # "Version" key instead of "MinimalDisplayName".
+  postPatch = ''
+    substituteInPlace lib/libc/darwin/SDKSettings.json \
+      --replace-fail '"MinimalDisplayName"' '"Version"'
+  '';
+
   preBuild = ''
     export ZIG_DEBUG_CMD=1;
     export ZIG_LIB_DIR=./lib;
